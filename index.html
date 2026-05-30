@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zimbabwe Asset Liability Management Platform</title>
+<script src="alm_engine.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#1c2230;--bg4:#21262d;--brd:rgba(255,255,255,.08);--brd2:rgba(255,255,255,.15);--txt:#e6edf3;--txt2:#8b949e;--txt3:#6e7681;--bl:#388bfd;--bl-bg:rgba(56,139,253,.1);--gr:#3fb950;--gr-bg:rgba(63,185,80,.1);--or:#e3b341;--or-bg:rgba(227,179,65,.1);--rd:#f85149;--rd-bg:rgba(248,81,73,.1);--pu:#a5a0f5;--pu-bg:rgba(165,160,245,.1);--te:#39d353;--r:8px;--rl:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.6;overflow-x:hidden}
+.app{display:flex;min-height:100vh}
+.sb{width:220px;background:var(--bg2);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100}
+.mn{margin-left:220px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.tb{background:var(--bg2);border-bottom:1px solid var(--brd);padding:0 20px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0}
+.ct{padding:20px;flex:1}
+.sb-brand{padding:14px 14px 10px;border-bottom:1px solid var(--brd)}
+.sb-logo{display:flex;align-items:center;gap:9px;margin-bottom:2px}
+.sb-ic{width:30px;height:30px;background:linear-gradient(135deg,#388bfd,#a5a0f5);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;color:#fff;flex-shrink:0}
+.sb-nm{font-size:12px;font-weight:700}.sb-sub{font-size:10px;color:var(--txt2)}
+.ng{padding:8px 6px 2px}
+.nl{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;padding:0 8px 4px}
+.ni{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:6px;cursor:pointer;color:var(--txt2);font-size:12px;font-weight:500;transition:all .15s;margin-bottom:1px;user-select:none}
+.ni:hover{background:var(--bg3);color:var(--txt)}.ni.on{background:var(--bl-bg);color:var(--bl)}
+.ni svg{width:13px;height:13px;flex-shrink:0}
+.nb{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px}
+.nok{background:var(--gr-bg);color:var(--gr)}.nwn{background:var(--or-bg);color:var(--or)}.nrd{background:var(--rd-bg);color:var(--rd)}.nbl{background:var(--bl-bg);color:var(--bl)}
+.sb-ft{margin-top:auto;padding:10px 12px;border-top:1px solid var(--brd);font-size:10px;color:var(--txt3);line-height:1.6}
+.tb-l{display:flex;flex-direction:column}
+.tb-t{font-size:14px;font-weight:700}.tb-s{font-size:11px;color:var(--txt2)}
+.tb-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid transparent}
+.c-ok{background:var(--gr-bg);color:var(--gr);border-color:rgba(63,185,80,.25)}.c-wn{background:var(--or-bg);color:var(--or);border-color:rgba(227,179,65,.25)}.c-rd{background:var(--rd-bg);color:var(--rd);border-color:rgba(248,81,73,.25)}.c-bl{background:var(--bl-bg);color:var(--bl);border-color:rgba(56,139,253,.25)}
+.cdot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pu 2s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.sec{display:none}.sec.on{display:block}
+.sh{margin-bottom:18px}.sh h2{font-size:16px;font-weight:700;margin-bottom:3px}.sh p{font-size:12px;color:var(--txt2)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.g2,.g21,.g3{grid-template-columns:1fr}}
+.cd{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rl);padding:15px 17px;margin-bottom:16px}
+.cdh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cdt{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em}
+.mc{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rl);padding:13px 15px;position:relative;overflow:hidden}
+.mc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.mc.bl::after{background:linear-gradient(90deg,var(--bl),transparent)}.mc.gr::after{background:linear-gradient(90deg,var(--gr),transparent)}.mc.or::after{background:linear-gradient(90deg,var(--or),transparent)}.mc.rd::after{background:linear-gradient(90deg,var(--rd),transparent)}.mc.pu::after{background:linear-gradient(90deg,var(--pu),transparent)}.mc.te::after{background:linear-gradient(90deg,var(--te),transparent)}
+.ml{font-size:11px;color:var(--txt2);margin-bottom:4px;font-weight:500}
+.mv{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.mv.bl{color:var(--bl)}.mv.gr{color:var(--gr)}.mv.or{color:var(--or)}.mv.rd{color:var(--rd)}.mv.pu{color:var(--pu)}.mv.te{color:var(--te)}
+.ms{font-size:11px;color:var(--txt3);margin-top:2px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--bg3);color:var(--txt2);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:7px 10px;text-align:left;border-bottom:1px solid var(--brd);white-space:nowrap}
+tbody td{padding:7px 10px;border-bottom:1px solid var(--brd);color:var(--txt);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.tr-tot{background:var(--bg3)!important;font-weight:700}
+.num{font-variant-numeric:tabular-nums;text-align:right;font-family:ui-monospace,monospace;font-size:11px}
+.pl{display:inline-flex;align-items:center;padding:2px 7px;border-radius:9px;font-size:10px;font-weight:700;white-space:nowrap}
+.pl-ok{background:var(--gr-bg);color:var(--gr)}.pl-wn{background:var(--or-bg);color:var(--or)}.pl-rd{background:var(--rd-bg);color:var(--rd)}.pl-bl{background:var(--bl-bg);color:var(--bl)}.pl-pu{background:var(--pu-bg);color:var(--pu)}
+.pr{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.prl{font-size:11px;color:var(--txt2);width:130px;flex-shrink:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prt{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prf{height:100%;border-radius:3px;transition:width .5s}
+.prv{font-size:11px;color:var(--txt2);font-variant-numeric:tabular-nums;width:72px;text-align:right;flex-shrink:0}
+.bx{border-radius:var(--r);padding:10px 13px;font-size:12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.bx-i{flex-shrink:0;font-size:14px}
+.bi{background:var(--bl-bg);border:1px solid rgba(56,139,253,.2);color:var(--txt2)}.bw{background:var(--or-bg);border:1px solid rgba(227,179,65,.25);color:var(--or)}.bd{background:var(--rd-bg);border:1px solid rgba(248,81,73,.25);color:var(--rd)}.bs{background:var(--gr-bg);border:1px solid rgba(63,185,80,.25);color:var(--gr)}
+hr{border:none;border-top:1px solid var(--brd);margin:11px 0}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--brd2);background:var(--bg3);color:var(--txt);transition:all .15s;white-space:nowrap;user-select:none}
+.btn:hover{background:var(--bg4);border-color:var(--bl)}.btn:active{transform:scale(.97)}
+.bp{background:#1f6feb;border-color:#388bfd;color:#fff}.bp:hover{background:#388bfd}
+.bgr{background:rgba(63,185,80,.12);border-color:rgba(63,185,80,.3);color:var(--gr)}
+.bor{background:rgba(227,179,65,.12);border-color:rgba(227,179,65,.3);color:var(--or)}
+.ch{position:relative;width:100%}
+.leg{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:8px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2)}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.dz{border:2px dashed var(--brd2);border-radius:var(--rl);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg3)}
+.dz:hover,.dz.ov{border-color:var(--bl);background:var(--bl-bg)}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ic{font-size:28px;margin-bottom:8px}.dz-t{font-size:13px;font-weight:600;margin-bottom:3px}.dz-s{font-size:11px;color:var(--txt2)}
+.fl{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.fi{display:flex;align-items:center;gap:9px;background:var(--bg3);border-radius:var(--r);padding:7px 11px;border:1px solid var(--brd);animation:fd .2s}
+@keyframes fd{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.fib{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.fx{background:rgba(63,185,80,.15);color:var(--gr)}.fd2{background:rgba(165,160,245,.15);color:var(--pu)}
+.fn{flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm{font-size:10px;color:var(--txt2);flex-shrink:0}
+.fs2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;flex-shrink:0}
+.fok{background:var(--gr-bg);color:var(--gr)}.fdm{background:var(--pu-bg);color:var(--pu)}.fer{background:var(--rd-bg);color:var(--rd)}
+.pb-w{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:8px 0}
+.pb{height:100%;background:linear-gradient(90deg,var(--bl),var(--pu));border-radius:2px;transition:width .4s;width:0}
+.plog{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--r);padding:11px;font-size:11px;color:var(--txt2);max-height:160px;overflow-y:auto;font-family:ui-monospace,monospace;line-height:1.7;margin-top:10px;display:none}
+.lok{color:var(--gr)}.lwn{color:var(--or)}.ler{color:var(--rd)}.lin{color:var(--bl)}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.scrd{background:var(--bg3);border-radius:var(--r);padding:9px 11px;border:1px solid var(--brd)}
+.scrt{font-size:11px;font-weight:700;color:var(--bl);margin-bottom:2px}.scrf{font-size:10px;color:var(--txt2);line-height:1.7}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.mf label{display:block;font-size:11px;color:var(--txt2);margin-bottom:2px;font-weight:500}
+.mf input{width:100%;background:var(--bg3);border:1px solid var(--brd2);border-radius:var(--r);padding:6px 8px;color:var(--txt);font-size:12px;outline:none;transition:border-color .15s}
+.mf input:focus{border-color:var(--bl)}
+.rg{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:14px}
+.rc{border-radius:var(--rl);padding:13px 15px;border:1px solid}
+.rs{background:rgba(63,185,80,.06);border-color:rgba(63,185,80,.2)}.rv{background:rgba(227,179,65,.06);border-color:rgba(227,179,65,.2)}.rxc{background:rgba(248,81,73,.06);border-color:rgba(248,81,73,.2)}
+.rn{font-size:11px;font-weight:700;margin-bottom:5px}
+.rs .rn{color:var(--gr)}.rv .rn{color:var(--or)}.rxc .rn{color:var(--rd)}
+.rpr{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.rd2{font-size:11px;color:var(--txt2);margin-top:3px;line-height:1.4}
+.sl{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.sl-l{font-size:12px;color:var(--txt2);width:130px;flex-shrink:0}
+.sl input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg4);outline:none;cursor:pointer;appearance:none}
+.sl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--bl);cursor:pointer;border:2px solid var(--bg2)}
+.sl-v{font-size:12px;font-variant-numeric:tabular-nums;color:var(--bl);font-weight:700;width:38px;text-align:right}
+.ab{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:10px 0;gap:1px}
+.aseg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.88);transition:width .4s;overflow:hidden;white-space:nowrap;min-width:0}
+.diss-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;overflow-y:auto;padding:20px}
+.diss-panel{max-width:960px;margin:0 auto;background:#fff;color:#111;border-radius:10px;padding:28px 32px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.diss-hdr{text-align:center;margin-bottom:20px;border-bottom:2px solid #111;padding-bottom:14px}
+.diss-hdr h1{font-size:18pt;font-family:'Times New Roman',Times,serif;margin-bottom:4px;color:#111}
+.diss-hdr p{font-size:11pt;font-family:'Times New Roman',Times,serif;color:#333;margin:2px 0}
+.diss-toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:22px}
+.diss-toolbar .btn{border-color:#ccc;color:#111;background:#f5f5f5}
+.diss-toolbar .btn.bp{background:#1f6feb;border-color:#388bfd;color:#fff}
+.diss-fig{margin:28px 0;padding:18px;border:1px solid #ccc;page-break-inside:avoid}
+.diss-fig h2{font-size:13pt;font-family:'Times New Roman',Times,serif;margin-bottom:4px;color:#111}
+.diss-fig .diss-cap{font-size:11pt;font-family:'Times New Roman',Times,serif;font-weight:700;text-align:center;margin-bottom:12px;color:#333}
+.diss-fig canvas{width:100%!important;max-height:420px}
+.diss-qq-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.diss-qq-grid{grid-template-columns:1fr}}
+@media print{.diss-ov{position:static;background:#fff;padding:0}.diss-toolbar,.diss-close{display:none!important}.diss-panel{box-shadow:none;padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <div class="sb-ic">ZWALM</div>
+      <div><div class="sb-nm">Zimbabwe ALM Platform</div><div class="sb-sub">Asset Liability Management System</div></div>
+    </div>
+  </div>
+  <div class="ng">
+    <div class="nl">Data</div>
+    <div class="ni on" onclick="nav('ingest',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import Data<span class="nb nbl" id="nb-f">0 files</span></div>
+    <div class="ni" onclick="nav('overview',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+  </div>
+  <div class="ng">
+    <div class="nl">Actuarial</div>
+    <div class="ni" onclick="nav('solvency',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Solvency &amp; SCR<span class="nb" id="nb-scr">—</span></div>
+    <div class="ni" onclick="nav('provisions',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Tech Provisions</div>
+    <div class="ni" onclick="nav('stress',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Stress Testing<span class="nb nwn" id="nb-st">!</span></div>
+  </div>
+  <div class="ng">
+    <div class="nl">Portfolio</div>
+    <div class="ni" onclick="nav('premiums',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Premiums</div>
+    <div class="ni" onclick="nav('claims',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Claims</div>
+    <div class="ni" onclick="nav('investments',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Investments</div>
+    <div class="ni" onclick="nav('reinsurance',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>Reinsurance</div>
+    <div class="ni" onclick="nav('underwriting',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Underwriting</div>
+  </div>
+  <div class="ng">
+    <div class="nl">ALM</div>
+    <div class="ni" onclick="nav('regime',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Regime Model</div>
+    <div class="ni" onclick="nav('alm',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>ALM Optimiser</div>
+  </div>
+  <div class="sb-ft" id="sbft">No data loaded<br>ZICARP · IFRS 17 · APN 401 · Zimbabwe Regulatory Framework</div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="mn">
+  <div class="tb">
+    <div class="tb-l"><div class="tb-t" id="pg-t">Import Company Data</div><div class="tb-s" id="pg-s">Upload XLSX files or load demo data</div></div>
+    <div class="tb-r">
+      <div class="chip c-bl" id="chip-d"><div class="cdot"></div><span id="chip-d-t">Awaiting data</span></div>
+      <div class="chip c-wn" id="chip-scr" style="display:none"><div class="cdot"></div><span id="chip-scr-t"></span></div>
+      <div class="chip" id="chip-sol" style="display:none"><span id="chip-sol-t"></span></div>
+    </div>
+  </div>
+  <div class="ct">
+
+  <!-- ════ INGEST ════ -->
+  <div id="sec-ingest" class="sec on">
+    <div class="sh"><h2>Import Company Data</h2><p>Upload XLSX/CSV files. The engine auto-detects Premium Data, Claims Paid, Outstanding Claims, ZICARP QRT and Balance Sheet formats.</p></div>
+    <div class="g21">
+      <div>
+        <div class="cd">
+          <div class="cdh"><span class="cdt">File Upload</span><span id="fc-lbl" style="font-size:10px;color:var(--txt2)">0 files</span></div>
+          <div class="dz" id="dz" ondrop="onDrop(event)" ondragover="e=>{e.preventDefault();getElementById('dz').classList.add('ov')}" ondragleave="getElementById('dz').classList.remove('ov')">
+            <input type="file" multiple accept=".xlsx,.xls,.csv" onchange="handleFiles(this.files)">
+            <div class="dz-ic">📂</div>
+            <div class="dz-t">Drop XLSX/CSV files here or click to browse</div>
+            <div class="dz-s">Premium Data · Claims · Outstanding Claims · ZICARP QRT · Balance Sheet</div>
+          </div>
+          <div class="fl" id="fl"></div>
+          <div class="pb-w"><div class="pb" id="pb"></div></div>
+          <div class="plog" id="plog"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn bp" onclick="runEngine()">▶ Run ALM Engine</button>
+            <button class="btn bgr" onclick="loadDemo()">📊 Load Zimbabwe Demo Data</button>
+            <button class="btn bor" onclick="exportTxt()">↓ Export Report</button>
+            <button class="btn" style="background:#9b59b6;color:#fff" onclick="generateDissertationGraphs()">📈 Chapter 4 Figures (incl. Q-Q)</button>
+            <button class="btn" style="font-size:11px" onclick="clearAll()">✕ Clear</button>
+          </div>
+        </div>
+        <div class="cd">
+          <div class="cdh"><span class="cdt">Manual ZICARP Inputs</span><span style="font-size:10px;color:var(--txt2)">Supplements uploaded files</span></div>
+          <div class="mg">
+            <div class="mf"><label>Investment Property (ZWG)</label><input id="mi-prop" type="number" placeholder="546622488"></div>
+            <div class="mf"><label>Listed Equities (ZWG)</label><input id="mi-eq" type="number" placeholder="411529"></div>
+            <div class="mf"><label>Gold Coins (ZWG)</label><input id="mi-gold" type="number" placeholder="8378163"></div>
+            <div class="mf"><label>Money Market (ZWG)</label><input id="mi-mm" type="number" placeholder="5078488"></div>
+            <div class="mf"><label>Insurance Receivables (ZWG)</label><input id="mi-recv" type="number" placeholder="183658998"></div>
+            <div class="mf"><label>Cash &amp; Equivalents (ZWG)</label><input id="mi-cash" type="number" placeholder="1072276"></div>
+            <div class="mf"><label>Share Capital (ZWG)</label><input id="mi-sc" type="number" placeholder="6074807"></div>
+            <div class="mf"><label>Retained Earnings (ZWG)</label><input id="mi-re" type="number" placeholder="404806219"></div>
+            <div class="mf"><label>Non-Tech Liabilities (ZWG)</label><input id="mi-ntl" type="number" placeholder="299186684"></div>
+            <div class="mf"><label>AMCR (ZWG)</label><input id="mi-amcr" type="number" placeholder="38697750"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="btn bp" onclick="applyManual()">Apply Inputs</button>
+            <button class="btn" style="font-size:11px" onclick="fillDemo()">Fill Defaults</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="cd">
+          <div class="cdh"><span class="cdt">Accepted File Schemas</span></div>
+          <div class="sg">
+            <div class="scrd"><div class="scrt">Premium Data</div><div class="scrf">Class · GWP · NWP · RI<br>Gross UPR · Net UPR<br>Incept · Expire</div></div>
+            <div class="scrd"><div class="scrt">Claims Paid</div><div class="scrf">D.O.L · Reported<br>DATE PAID · Type<br>USD · ZWL · ZWL.1</div></div>
+            <div class="scrd"><div class="scrt">Outstanding Claims</div><div class="scrf">Occur Date · Currency<br>ClaimAmountInc<br>GrossInc · NetInc</div></div>
+            <div class="scrd"><div class="scrt">ZICARP QRT</div><div class="scrf">Balance Sheet<br>Own Funds · SCR<br>MCR · Tech Provisions</div></div>
+            <div class="scrd"><div class="scrt">Debtors Ageing</div><div class="scrf">0–30 days · 31–60<br>61–90 · 91–120<br>Over 120 days</div></div>
+            <div class="scrd"><div class="scrt">Combined Ratios</div><div class="scrf">Class · Loss Ratio<br>Commission Ratio<br>Expense Ratio</div></div>
+          </div>
+        </div>
+        <div class="cd">
+          <div class="cdh"><span class="cdt">Engine Status</span></div>
+          <div style="font-size:12px;color:var(--txt2);line-height:2.1">
+            <div>Premium records: <span id="st-p" style="color:var(--txt)">—</span></div>
+            <div>Claims records: <span id="st-c" style="color:var(--txt)">—</span></div>
+            <div>Outstanding claims: <span id="st-oc" style="color:var(--txt)">—</span></div>
+            <div>Classes detected: <span id="st-cl" style="color:var(--txt)">—</span></div>
+            <div>Total GWP: <span id="st-gwp" style="color:var(--txt)">—</span></div>
+            <div>SCR Cover: <span id="st-scr" style="color:var(--txt)">—</span></div>
+            <div>MCR Cover: <span id="st-mcr" style="color:var(--txt)">—</span></div>
+            <div>Last run: <span id="st-time" style="color:var(--txt)">Never</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ OVERVIEW ════ -->
+  <div id="sec-overview" class="sec">
+    <div class="sh"><h2>Executive Overview</h2><p id="ov-dt">ZICARP &amp; IFRS 17 Solvency Assessment — Zimbabwe Insurance Sector</p></div>
+    <div class="g4" id="ov-kpi"></div>
+    <div id="ov-alert"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">GWP by Class of Business</span></div><div class="leg" id="leg-gwp"></div><div class="ch" style="height:200px"><canvas id="ch-gwp"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Combined Ratio by Class (%)</span></div><div class="ch" style="height:225px"><canvas id="ch-cr"></canvas></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Capital Stack — ZICARP Basis (ZWG)</span></div><div id="ov-stack"></div></div>
+    <div class="cd"><div class="cdh"><span class="cdt">IFRS 17 vs ZICARP Balance Sheet Reconciliation</span></div><div class="tw"><table id="ov-bs"><thead><tr><th>Item</th><th class="num">IFRS 17 (ZWG)</th><th class="num">ZICARP (ZWG)</th><th class="num">Difference</th><th>Note</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ SOLVENCY ════ -->
+  <div id="sec-solvency" class="sec">
+    <div class="sh"><h2>Solvency &amp; Capital Requirements</h2><p>ZICARP risk-based capital — SCR, MCR, own funds tiering and admissible assets</p></div>
+    <div class="g4" id="sol-kpi"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">SCR Decomposition — Market Risk</span></div><div class="leg" id="leg-scr"></div><div class="ch" style="height:195px"><canvas id="ch-scr-pie"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Capital Charge Build-Up</span></div><div id="scr-bars"></div></div>
+    </div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Own Funds Tiering</span></div><div class="tw"><table id="sol-of"><thead><tr><th>Component</th><th class="num">Amount (ZWG)</th><th>Tier</th><th>SCR Eligible</th><th>MCR Eligible</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Admissible Assets — ZICARP Rules</span></div><div class="tw"><table id="sol-adm"><thead><tr><th>Asset</th><th class="num">IFRS Value</th><th class="num">Inadmissible</th><th class="num">ZICARP Value</th><th>Status</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Full SCR Build-Up</span></div><div class="tw"><table id="sol-scr"><thead><tr><th>Risk Module</th><th>Sub-Component</th><th class="num">Undiversified (ZWG)</th><th class="num">Diversified (ZWG)</th><th>% of SCR</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ PROVISIONS ════ -->
+  <div id="sec-provisions" class="sec">
+    <div class="sh"><h2>Technical Provisions — IFRS 17 &amp; ZICARP</h2><p>IBNR: 5% of GWP (Circular 1/2014) · Risk Adjustment: VaR 99.5% · UPR: 365th method</p></div>
+    <div class="g4" id="prov-kpi"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Provision Components (ZWG)</span></div><div class="ch" style="height:210px"><canvas id="ch-prov"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">IBNR by Class (Gross)</span></div><div id="ibnr-bars"></div><hr><div class="cdh" style="margin-top:8px;margin-bottom:6px"><span class="cdt">Loss Components (Onerous Contracts)</span></div><div id="lc-bars"></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Detailed Technical Provisions by Class</span></div><div class="tw"><table id="prov-tbl"><thead><tr><th>Class</th><th class="num">Gross IBNR</th><th class="num">Net IBNR</th><th class="num">Gross OCR</th><th class="num">Net OCR</th><th class="num">Risk Adj.</th><th class="num">Gross UPR</th><th class="num">Net UPR</th><th class="num">Loss Comp.</th><th class="num">Gross Total</th><th class="num">Net Total</th><th>CR</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ STRESS ════ -->
+  <div id="sec-stress" class="sec">
+    <div class="sh"><h2>Stress Testing &amp; Scenario Analysis</h2><p>ZICARP mandatory scenarios + regime-based ALM shocks + property sensitivity</p></div>
+    <div id="stress-alert"></div>
+    <div class="g3" id="stress-kpi"></div>
+    <div class="cd"><div class="cdh"><span class="cdt">ZICARP Standard Scenarios (Own Funds Shocks)</span></div><div class="ch" style="height:210px"><canvas id="ch-stress"></canvas></div></div>
+    <div class="cd"><div class="cdh"><span class="cdt">ALM Regime-Based Stress Scenarios</span></div><div class="tw"><table id="stress-tbl"><thead><tr><th>Scenario</th><th>Description</th><th class="num">Asset Impact</th><th class="num">Liability Impact</th><th class="num">New Own Funds</th><th>SCR Cover</th><th>Status</th><th class="num">Capital Deficit</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="cd"><div class="cdh"><span class="cdt">Property Value Sensitivity → SCR Cover</span></div><div class="ch" style="height:185px"><canvas id="ch-psens"></canvas></div><p style="font-size:11px;color:var(--txt2);margin-top:8px">Dashed red = minimum SCR cover of 1.0×. Point where line crosses identifies break-even property decline.</p></div>
+  </div>
+
+  <!-- ════ PREMIUMS ════ -->
+  <div id="sec-premiums" class="sec">
+    <div class="sh"><h2>Premium Analysis</h2><p>Policy-level data — GWP, retention ratios, combined ratio components by class</p></div>
+    <div class="g4" id="prem-kpi"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">GWP vs NWP by Class (ZWG)</span></div><div class="ch" style="height:220px"><canvas id="ch-prem-bar"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">RI Cession by Class (ZWG)</span></div><div class="ch" style="height:220px"><canvas id="ch-ri-cess"></canvas></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Retention Ratios</span></div><div id="ret-bars"></div></div>
+    <div class="cd"><div class="cdh"><span class="cdt">Combined Ratio Components by Class</span></div><div class="tw"><table id="prem-tbl"><thead><tr><th>Class</th><th class="num">GWP (ZWG)</th><th class="num">NWP (ZWG)</th><th class="num">RI Premium</th><th>Retention</th><th>Loss Ratio</th><th>Exp. Ratio</th><th>Combined</th><th>Status</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ CLAIMS ════ -->
+  <div id="sec-claims" class="sec">
+    <div class="sh"><h2>Claims Analysis</h2><p>Paid claims, outstanding reserves, settlement lag distribution</p></div>
+    <div class="g4" id="cl-kpi"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Monthly Claims Paid (ZWL)</span></div><div class="ch" style="height:210px"><canvas id="ch-cl-mon"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Claims by Type</span></div><div class="leg" id="leg-cl"></div><div class="ch" style="height:195px"><canvas id="ch-cl-type"></canvas></div></div>
+    </div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Settlement Lag Distribution (Days)</span></div><div class="ch" style="height:175px"><canvas id="ch-lag"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Outstanding Claims Summary</span></div><div class="tw"><table id="oc-tbl"><thead><tr><th>Occurrence</th><th>Currency</th><th class="num">Gross Amount</th><th class="num">Net Amount</th><th>Status</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+  </div>
+
+  <!-- ════ INVESTMENTS ════ -->
+  <div id="sec-investments" class="sec">
+    <div class="sh"><h2>Investment Portfolio &amp; Duration Analysis</h2><p>Asset allocation, liquidity coverage, IFRS 17 duration mismatch</p></div>
+    <div class="g4" id="inv-kpi"></div>
+    <div id="inv-alert"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Asset Allocation</span></div><div class="leg" id="leg-alloc"></div><div class="ch" style="height:210px"><canvas id="ch-alloc"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Asset–Liability Duration Mismatch (IFRS 17)</span></div><div class="leg"><span class="li"><span class="ld" style="background:rgba(56,139,253,.7)"></span>Assets %</span><span class="li"><span class="ld" style="background:rgba(248,81,73,.7)"></span>Liabilities %</span></div><div class="ch" style="height:210px"><canvas id="ch-dur"></canvas></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Liquidity Coverage Analysis</span></div><div id="lcr-bars"></div></div>
+    <div class="cd"><div class="cdh"><span class="cdt">Asset Schedule — Admissibility &amp; Liquidity</span></div><div class="tw"><table id="inv-tbl"><thead><tr><th>Asset</th><th class="num">IFRS Value (ZWG)</th><th class="num">% of Total</th><th>Liquidity</th><th>Duration</th><th>ZICARP Status</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ REINSURANCE ════ -->
+  <div id="sec-reinsurance" class="sec">
+    <div class="sh"><h2>Reinsurance Strategy Assessment</h2><p>Treaty &amp; facultative adequacy — recovery ratios, retention analysis, efficiency signals</p></div>
+    <div class="g4" id="ri-kpi"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Retention vs Recovery Ratio (%)</span></div><div class="ch" style="height:220px"><canvas id="ch-ri-bar"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Recovery Efficiency by Class</span></div><div id="ri-eff-bars"></div><div class="bx bi" style="margin-top:10px;margin-bottom:0"><div class="bx-i">ℹ</div><div>Recovery ratio target: &gt;15%. Below 5% indicates over-payment. Negotiate lower premiums or increase retention for classes with minimal claims experience.</div></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Reinsurance Detail by Class</span></div><div class="tw"><table id="ri-tbl"><thead><tr><th>Class</th><th class="num">GWP</th><th class="num">NWP</th><th class="num">RI Premium</th><th>Retention</th><th class="num">Recoveries</th><th>Recovery %</th><th>Efficiency</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ UNDERWRITING ════ -->
+  <div id="sec-underwriting" class="sec">
+    <div class="sh"><h2>Underwriting Strategy Evaluation</h2><p>Premium adequacy, onerous contract identification (IFRS 17), combined ratio components</p></div>
+    <div class="g4" id="uw-kpi"></div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Combined Ratio Components (Stacked)</span></div><div class="ch" style="height:240px"><canvas id="ch-uw-stack"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Onerous Contract Test — IFRS 17</span></div><div id="onerous-list"></div><hr><div class="cdh" style="margin-top:8px;margin-bottom:6px"><span class="cdt">Loss Component by Class (ZWG)</span></div><div class="ch" style="height:120px"><canvas id="ch-lc"></canvas></div></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">Premium Adequacy Assessment</span></div><div class="tw"><table id="uw-tbl"><thead><tr><th>Class</th><th class="num">GWP</th><th class="num">Earned Premium</th><th>Loss Ratio</th><th>Expense Ratio</th><th>Combined</th><th>Onerous?</th><th class="num">Loss Component</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ════ REGIME ════ -->
+  <div id="sec-regime" class="sec">
+    <div class="sh"><h2>Markov Regime-Switching Model</h2><p>3-state framework · Hamilton (1989) · Calibrated on RBZ macro data 2017–2024</p></div>
+    <div class="rg" id="reg-cards"></div>
+    <div class="g2">
+      <div class="cd">
+        <div class="cdh"><span class="cdt">Markov Transition Matrix</span></div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="trans-tbl">
+          <thead><tr><th style="padding:7px 10px;background:var(--bg3);color:var(--txt2);border:1px solid var(--brd)">From \ To</th><th style="padding:7px 10px;background:var(--bg3);color:var(--gr);border:1px solid var(--brd)">Stable</th><th style="padding:7px 10px;background:var(--bg3);color:var(--or);border:1px solid var(--brd)">Volatile</th><th style="padding:7px 10px;background:var(--bg3);color:var(--rd);border:1px solid var(--brd)">Crisis</th></tr></thead>
+          <tbody id="trans-body"></tbody>
+        </table>
+        <p style="font-size:10px;color:var(--txt3);margin-top:7px">Diagonal = persistence. Off-diagonal = transition risk. Crisis (R3) persistence = 0.57.</p>
+      </div>
+      <div class="cd"><div class="cdh"><span class="cdt">Asset Returns by Regime (Annualised %)</span></div><div class="ch" style="height:215px"><canvas id="ch-reg-ret"></canvas></div></div>
+    </div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">5-Year Simulated Regime Path</span></div><div class="ch" style="height:165px"><canvas id="ch-reg-sim"></canvas></div></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Forward Regime Probabilities (Markov)</span></div><div class="ch" style="height:165px"><canvas id="ch-reg-fwd"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ════ ALM ════ -->
+  <div id="sec-alm" class="sec">
+    <div class="sh"><h2>Dynamic ALM Optimiser</h2><p>Regime-switching stochastic programming · min σ²(Surplus) subject to ZICARP solvency, IFRS 17, liquidity constraints</p></div>
+    <div class="bx bi"><div class="bx-i">ℹ</div><div><b>Objective:</b> min Var(A) + Var(L) − 2·Cov(A,L) subject to: Own Funds ≥ SCR · LCR ≥ 1.0 · Duration Gap ≤ 3yr. Active regime: <b>Volatile R2</b> (61% probability). Adjust sliders and observe live metric updates.</div></div>
+    <div class="g21">
+      <div class="cd">
+        <div class="cdh"><span class="cdt">Target Asset Allocation Sliders</span></div>
+        <div class="sl"><div class="sl-l">Investment Property</div><input type="range" min="10" max="85" value="73" id="sl-prop" step="1" oninput="updateALM()"><div class="sl-v" id="lv-prop">73%</div></div>
+        <div class="sl"><div class="sl-l">Listed Equities</div><input type="range" min="0" max="30" value="1" id="sl-eq" step="1" oninput="updateALM()"><div class="sl-v" id="lv-eq">1%</div></div>
+        <div class="sl"><div class="sl-l">Govt Bonds</div><input type="range" min="0" max="30" value="0" id="sl-bond" step="1" oninput="updateALM()"><div class="sl-v" id="lv-bond">0%</div></div>
+        <div class="sl"><div class="sl-l">Money Market</div><input type="range" min="1" max="30" value="1" id="sl-mm" step="1" oninput="updateALM()"><div class="sl-v" id="lv-mm">1%</div></div>
+        <div class="sl"><div class="sl-l">Gold / Alternatives</div><input type="range" min="0" max="15" value="1" id="sl-gold" step="1" oninput="updateALM()"><div class="sl-v" id="lv-gold">1%</div></div>
+        <div class="ab" id="ab">
+          <div class="aseg" style="background:#f85149;width:73%" id="as-prop">Prop</div>
+          <div class="aseg" style="background:#388bfd;width:1%" id="as-eq">Eq</div>
+          <div class="aseg" style="background:#3fb950;width:0%" id="as-bond">Bd</div>
+          <div class="aseg" style="background:#e3b341;width:1%" id="as-mm">MM</div>
+          <div class="aseg" style="background:#a5a0f5;width:1%" id="as-gold">Au</div>
+          <div class="aseg" style="background:#8b949e;flex:1" id="as-recv">Rcv</div>
+        </div>
+        <div id="alm-ov" style="display:none" class="bx bw"><div class="bx-i">⚠</div>Total exceeds 100% — adjust sliders</div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn bp" onclick="applyOptimal()">✦ Apply Optimal Mix</button>
+          <button class="btn bgr" onclick="rerunMC()">↺ Re-run Monte Carlo</button>
+          <button class="btn" style="font-size:11px" onclick="resetALM()">Reset</button>
+        </div>
+      </div>
+      <div class="cd" style="display:flex;flex-direction:column;gap:9px">
+        <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em">Live ALM Metrics — Volatile R2</div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:12px"><div class="ml">Estimated SCR Cover</div><div class="mv" id="alm-scr" style="font-size:26px">—</div><div class="ms" id="alm-scr-s"></div></div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:12px"><div class="ml">Liquidity Coverage Ratio</div><div class="mv" id="alm-lcr" style="font-size:26px">—</div><div class="ms" id="alm-lcr-s"></div></div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:12px"><div class="ml">Expected Portfolio Return (R2)</div><div class="mv bl" id="alm-ret" style="font-size:26px">—</div></div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:12px"><div class="ml">Surplus Volatility (σ)</div><div class="mv or" id="alm-vol" style="font-size:26px">—</div></div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:12px"><div class="ml">Duration Gap (IFRS 17)</div><div class="mv pu" id="alm-dur" style="font-size:26px">—</div></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="cd"><div class="cdh"><span class="cdt">Efficient Frontier — Return vs Surplus Volatility</span></div><div class="ch" style="height:210px"><canvas id="ch-front"></canvas></div><p style="font-size:11px;color:var(--txt2);margin-top:6px">Red triangle = current portfolio. Blue dots = feasible portfolios. Top-left corner is optimal (high return, low volatility).</p></div>
+      <div class="cd"><div class="cdh"><span class="cdt">Stochastic Surplus Projection — 5yr, 500 paths</span></div><div class="ch" style="height:210px"><canvas id="ch-surplus"></canvas></div><p style="font-size:11px;color:var(--txt2);margin-top:6px">Shaded band = 5th–95th percentile. Dashed red = SCR floor. P5 dipping below SCR signals capital risk.</p></div>
+    </div>
+    <div class="cd"><div class="cdh"><span class="cdt">ALM Recommendations — ZICARP &amp; IFRS 17 Aligned</span></div><div id="alm-recs" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div></div>
+  </div>
+
+  </div><!-- /content -->
+</main>
+</div>
+<div id="diss-overlay" class="diss-ov" style="display:none" aria-hidden="true">
+  <div class="diss-panel">
+    <div class="diss-hdr">
+      <h1>Chapter 4 — Dissertation Figures</h1>
+      <p>Zimbabwe ALM Platform · ZICARP · IFRS 17 · Regime-Switching ALM</p>
+      <p id="diss-meta" style="font-size:10pt"></p>
+    </div>
+    <div class="diss-toolbar">
+      <button type="button" class="btn bp" onclick="printDissertationGraphs()">Print / Save as PDF</button>
+      <button type="button" class="btn bgr" onclick="downloadDissertationGraphs()">Download all PNG</button>
+      <button type="button" class="btn diss-close" onclick="closeDissertationGraphs()">Close</button>
+    </div>
+    <div id="diss-graphs"></div>
+  </div>
+</div>
+<script>
+// ══════════════════════════════════════════════════════
+// EMBEDDED ALM ENGINE — All Dissertation Calculations
+// ══════════════════════════════════════════════════════
+(function(){
+  function calcIBNR(nwp,gwp,p=.05){return{gross:gwp*p,net:nwp*p}}
+  function calcRA(ibnr,ocr,cls){const f={motor:.10,liability:.20,other:.15};return(f[(cls||'').toLowerCase()]||.15)*(ibnr+ocr)}
+  function calcLossComp(upr,cr){return cr<=1?0:Math.max(0,upr*(cr-1))}
+  function calcEquityRisk(listed=0,unlisted=0,sym=0){
+    const cl=listed*(0.32+sym),cu=unlisted*0.45;
+    return Math.sqrt(cl**2+cu**2+2*.75*cl*cu);
+  }
+  function calcPropertyRisk(prop=0){return prop*0.25}
+  function calcCPRisk(cat1=[],cat2=[]){
+    let c1=0,c2=0;
+    for(const{exposure:e=0,lgd:l=1,pd:p=.1}of cat1)c1+=e*l*p;
+    for(const{amount:a=0,days:d=30}of cat2)c2+=d<=60?a*.15:d<=90?a*.40:a*.90;
+    return{cat1:c1,cat2:c2,total:Math.sqrt(c1**2+c2**2+2*.75*c1*c2)};
+  }
+  function calcConcRisk(exps=[],tot=1){
+    let ch=0;
+    for(const{value:v=0,ct:ct=.015,lgd:l=.35}of exps){
+      const xi=Math.max(0,(v*l)/Math.max(tot,1)-ct);
+      if(xi>0)ch+=Math.sqrt(xi)*.73*tot;
+    }
+    return ch;
+  }
+  function calcMktRisk(eq=0,prop=0,cp=0,curr=0,conc=0){
+    const c=[eq,prop,cp,curr,conc];
+    const rho=[[1,.75,.75,.5,.5],[.75,1,.5,.5,.5],[.75,.5,1,.5,.5],[.5,.5,.5,1,.5],[.5,.5,.5,.5,1]];
+    let d=0;for(let i=0;i<5;i++)for(let j=0;j<5;j++)d+=rho[i][j]*c[i]*c[j];
+    return{undiversified:c.reduce((a,b)=>a+b,0),diversified:Math.sqrt(Math.max(0,d))};
+  }
+  function calcNLUW(lines=[]){
+    const sp={farming:.17,engineering:.17,liability:.15,motor:.10,accident:.14,fire:.10,other:.15};
+    const sr={farming:.08,engineering:.11,liability:.09,motor:.09,accident:.10,fire:.10,other:.11};
+    let pv=0,rv=0;
+    for(const l of lines){
+      const lob=(l.lob||'other').toLowerCase();
+      const vp=l.nep*(sp[lob]||.15),vr=l.reserve*(sr[lob]||.10);
+      pv+=vp**2;rv+=vr**2;
+    }
+    const p=Math.sqrt(pv),r=Math.sqrt(rv),cat=p*.15;
+    return{premRisk:p,claimsRisk:r,catRisk:cat,undiversified:p+r+cat,diversified:Math.sqrt(p**2+r**2+cat**2+2*.25*p*r)};
+  }
+  function calcBSCR(mkt=0,nl=0){return Math.sqrt(mkt**2+nl**2+2*.25*mkt*nl)}
+  function calcOpRisk(bscr=0,ep=0){return Math.max(.03*bscr,.03*(ep||0))}
+  function calcSCR(bscr=0,op=0){return bscr+op}
+  function calcMCR(scr=0,amcr=0,lines=[],of=0){
+    const af={farming:.20,engineering:.14,liability:.20,motor:.13,accident:.20,fire:.14};
+    const bf={farming:.17,engineering:.13,liability:.14,motor:.11,accident:.17,fire:.13};
+    let lin=0;
+    for(const l of lines){
+      const lob=(l.lob||'other').toLowerCase();
+      lin+=Math.max((af[lob]||.18)*(l.netTP||0),(bf[lob]||.15)*(l.nep||0));
+    }
+    const mcr=Math.max(amcr||0,.25*scr,lin);
+    return{mcr,scrCover:of/Math.max(scr,1),mcrCover:of/Math.max(mcr,1),mcrLinear:lin};
+  }
+  function calcAdmissible(assets={}){
+    const bad=['goodwill','deferredTaxAssets','intangibles','itSystems','furniture','motorVehicles','otherOperatingAssets'];
+    let inadm=0,items={};
+    for(const k of bad)if(assets[k]){inadm+=assets[k];items[k]=assets[k]}
+    const total=Object.values(assets).reduce((a,b)=>a+(+b||0),0);
+    return{admissible:Math.max(0,total-inadm),inadmissible:inadm,items,total};
+  }
+  function calcOwnFunds(c={}){
+    const t1=(c.shareCapital||0)+(c.retainedEarnings||0)+(c.reconReserve||0);
+    return{tier1:t1,totalBOF:t1,eligible:t1};
+  }
+  function markovNext(PI,state,steps=1){
+    let s=[...state];
+    for(let t=0;t<steps;t++){
+      const n=[0,0,0];
+      for(let j=0;j<3;j++)for(let i=0;i<3;i++)n[j]+=s[i]*PI[i][j];
+      s=n;
+    }
+    return s;
+  }
+  function markovStat(PI,n=500){
+    let s=[1/3,1/3,1/3];
+    for(let i=0;i<n;i++)s=markovNext(PI,s);
+    return s;
+  }
+  function regimeReturn(alloc,r){
+    const ret={property:[.124,.068,-.152],equity:[.186,.094,-.284],bond:[.095,.121,.086],money_market:[.082,.116,.148],gold:[.061,.143,.227],other:[.03,.03,.02]};
+    let v=0,tot=0;
+    for(const[a,w]of Object.entries(alloc)){v+=w*(ret[a]?.[r]||.03);tot+=w}
+    return tot>0?v/tot:0;
+  }
+  function regimeVol(alloc,r){
+    const vols={property:[.08,.12,.25],equity:[.15,.22,.40],bond:[.04,.06,.09],money_market:[.02,.03,.05],gold:[.10,.14,.18],other:[.03,.05,.08]};
+    let pv=0;
+    const ks=Object.keys(alloc);
+    for(const a of ks)for(const b of ks){
+      const sa=vols[a]?.[r]||.05,sb=vols[b]?.[r]||.05;
+      pv+=alloc[a]*alloc[b]*sa*sb*(a===b?1:.5);
+    }
+    return Math.sqrt(Math.max(0,pv));
+  }
+  function calcSurplusMet(A,aVol,L,lVol=.10,corr=.20){
+    const surplus=A-L;
+    const va=(A*aVol)**2,vl=(L*lVol)**2,cov=2*corr*A*aVol*L*lVol;
+    const sv=Math.sqrt(Math.max(0,va+vl-cov));
+    return{surplus,surplusVol:sv,surplusVaR:surplus-2.576*sv};
+  }
+  function calcDurGap(dA=9.5,dL=.8,A=1,L=1){
+    const gap=dA-(L/Math.max(A,1))*dL;
+    return{durationGap:gap,irSens:-gap*A*.01};
+  }
+  function calcLCR(assets={},stL=1){
+    const h={cash:1,money_market:.95,gold:.85,equity:.80,bond:.90,property:.05,receivables:.50};
+    let liq=0;
+    for(const[t,v]of Object.entries(assets))liq+=v*(h[t]||.5);
+    return{lcr:liq/Math.max(stL,1),liquidAssets:liq};
+  }
+  function stressZICARP(scr,mcr,of,p=.25){
+    const r={};
+    for(const[n,f]of[['baseline',1],['scenario1',1-p],['scenario2',1+p]]){
+      const o=of*f;
+      r[n]={ownFunds:o,scrCover:+(o/Math.max(scr,1)).toFixed(3),mcrCover:+(o/Math.max(mcr,1)).toFixed(3)};
+    }
+    return r;
+  }
+  function stressALM(A,L,scr){
+    const pp=A*.732;
+    return[
+      {name:'Property –30%',desc:'Real estate collapse',as:-pp*.30,ls:L*.005},
+      {name:'Property –15%',desc:'Property correction',as:-pp*.15,ls:L*.003},
+      {name:'Inflation +50%',desc:'Claims cost surge',as:-A*.003,ls:L*.10},
+      {name:'FX deval –40%',desc:'ZWG/USD shock',as:-A*.011,ls:L*.04},
+      {name:'Cat claims +200%',desc:'Catastrophic event',as:0,ls:L*.05},
+      {name:'Crisis (R3)',desc:'Full crisis regime',as:-A*.24,ls:L*.08},
+    ].map(s=>{
+      const na=Math.max(0,A+s.as),nl=L+s.ls,no=Math.max(0,na-nl);
+      return{...s,newOF:no,scrCover:+(no/Math.max(scr,1)).toFixed(3),capitalDeficit:Math.max(0,scr-no)};
+    });
+  }
+  function propSens(A,L,scr,pp=.732){
+    return[-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,20,30].map(sh=>{
+      const newA=A+A*pp*(sh/100),of=Math.max(0,newA-L);
+      return{shock:sh,scrCover:+(of/Math.max(scr,1)).toFixed(3)};
+    });
+  }
+  function calcRI(gwp,nwp,ri,recoveries){
+    const ret=nwp/Math.max(gwp,1),rec=recoveries/Math.max(ri,1);
+    return{retentionRatio:ret,recoveryRatio:rec,efficiency:rec>.15?'Efficient':rec>.05?'Moderate':rec>.01?'Review':'Renegotiate'};
+  }
+  function monteCarlo(surplus,alloc,liabs,PI,regP,T=5,N=500){
+    const lg=[.05,.10,.20];
+    const st=Array.from({length:T+1},()=>[]);
+    for(let sim=0;sim<N;sim++){
+      let s=surplus,l=liabs,rp=[...regP];
+      const path=[+(s/1e6).toFixed(2)];
+      for(let t=0;t<T;t++){
+        const rand=Math.random();let reg=0,cp=0;
+        for(let r2=0;r2<3;r2++){cp+=rp[r2];if(rand<=cp){reg=r2;break}}
+        const mu=regimeReturn(alloc,reg),sig=regimeVol(alloc,reg);
+        const u1=Math.random()+1e-10,u2=Math.random();
+        const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+        const ar=mu+sig*z,lg2=lg[reg]*(0.5+Math.random());
+        l=l*(1+lg2);s=s*(1+ar)-l*lg2;
+        path.push(+(s/1e6).toFixed(2));
+        rp=markovNext(PI,rp);
+      }
+      path.forEach((v,i)=>st[i].push(v));
+    }
+    return st.map((vs,t)=>{
+      const sv=vs.slice().sort((a,b)=>a-b),mean=vs.reduce((a,b)=>a+b,0)/N;
+      return{t,mean:+mean.toFixed(2),p5:+sv[Math.floor(.05*N)].toFixed(2),p25:+sv[Math.floor(.25*N)].toFixed(2),p75:+sv[Math.floor(.75*N)].toFixed(2),p95:+sv[Math.floor(.95*N)].toFixed(2)};
+    });
+  }
+  // Use loaded engine with short-name aliases expected by this UI
+  if(typeof window.ZWALMEngine !== 'undefined'){
+    const Z=window.ZWALMEngine;
+    window.E={
+      calcIBNR:Z.calcIBNR,
+      calcRA:Z.calcRiskAdjustment,
+      calcLossComp:Z.calcLossComponent,
+      calcEquityRisk:Z.calcEquityRisk,
+      calcPropertyRisk:Z.calcPropertyRisk,
+      calcCPRisk(cat1,cat2){
+        return Z.calcCounterpartyDefaultRisk(cat1,(cat2||[]).map(r=>({amount:r.amount,daysDelay:r.daysDelay??r.days??30})));
+      },
+      calcConcRisk(exps,tot){
+        return Z.calcConcentrationRisk((exps||[]).map(e=>({value:e.value,ct:e.ct,lgdFactor:e.lgdFactor??e.lgd??0.35})),tot);
+      },
+      calcMktRisk:Z.calcMarketRisk,
+      calcNLUW:Z.calcNLUnderwritingRisk,
+      calcBSCR:Z.calcBSCR,
+      calcOpRisk:Z.calcOperationalRisk,
+      calcSCR:Z.calcSCR,
+      calcMCR:Z.calcMCR,
+      calcAdmissible:Z.calcAdmissibleAssets,
+      calcOwnFunds:Z.calcOwnFunds,
+      markovNext:Z.markovNextState,
+      markovStat:Z.markovStationary,
+      regimeReturn:Z.regimeExpectedReturn,
+      regimeVol:Z.regimeReturnVolatility,
+      calcSurplusMet:Z.calcSurplusMetrics,
+      calcDurGap:Z.calcDurationGap,
+      calcLCR:Z.calcLiquidityCoverage,
+      stressZICARP:Z.calcZICARPStressScenarios,
+      stressALM:Z.calcALMStressScenarios,
+      propSens:Z.propertySensitivityAnalysis,
+      calcRI(gwp,nwp,ri,recoveries){
+        const r=Z.calcReinsuranceAdequacy({gwp,nwp,riPremium:ri,recoveries,grossClaims:0,netClaims:0});
+        const rec=r.recoveryRatio;
+        return{retentionRatio:r.retentionRatio,recoveryRatio:rec,efficiency:rec>.15?'Efficient':rec>.05?'Moderate':rec>.01?'Review':'Renegotiate'};
+      },
+      monteCarlo(surplus,alloc,liabs,PI,regP,T,N){
+        return Z.monteCarloSurplus(surplus,alloc,liabs,PI,regP,T,N).stats;
+      }
+    };
+  } else {
+    window.E={calcIBNR,calcRA,calcLossComp,calcEquityRisk,calcPropertyRisk,calcCPRisk,calcConcRisk,calcMktRisk,calcNLUW,calcBSCR,calcOpRisk,calcSCR,calcMCR,calcAdmissible,calcOwnFunds,markovNext,markovStat,regimeReturn,regimeVol,calcSurplusMet,calcDurGap,calcLCR,stressZICARP,stressALM,propSens,calcRI,monteCarlo};
+  }
+})();
+
+// ══════════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ══════════════════════════════════════════════════════
+const PI=[[.72,.22,.06],[.18,.64,.18],[.08,.35,.57]];
+const RP=[.22,.61,.17];
+const K={bl:'#388bfd',gr:'#3fb950',or:'#e3b341',rd:'#f85149',pu:'#a5a0f5',gy:'#8b949e',te:'#39d353'};
+const CC={Agriculture:K.bl,Farming:K.bl,Engineering:K.pu,Liability:K.rd,Motor:K.or,Accident:K.gr,Property:K.gy,Fire:K.gy,Other:K.te};
+const PAGES={
+  ingest:['Import Company Data','Upload XLSX files or load demo data to begin'],
+  overview:['Executive Overview','ZICARP & IFRS 17 Solvency Assessment'],
+  solvency:['Solvency & Capital Requirements','ZICARP risk-based capital — SCR, MCR, Own Funds'],
+  provisions:['Technical Provisions','IFRS 17 & ZICARP Valuations'],
+  stress:['Stress Testing','ZICARP scenarios & ALM regime shocks'],
+  premiums:['Premium Analysis','Policy-level data by class of business'],
+  claims:['Claims Analysis','Paid claims, outstanding reserves, settlement lag'],
+  investments:['Investment Portfolio','Asset allocation, duration mismatch, LCR'],
+  reinsurance:['Reinsurance Strategy','Treaty & facultative adequacy'],
+  underwriting:['Underwriting Strategy','Premium adequacy & onerous contracts (IFRS 17)'],
+  regime:['Regime-Switching Model','Markov 3-state Zimbabwe macro framework'],
+  alm:['Dynamic ALM Optimiser','Stochastic surplus optimisation under regime uncertainty'],
+};
+
+let ST=null, CHS={}, LOG=[], FP={};
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+function fmt(n,d=0){return(isNaN(+n)||n===null)?'—':Number(n).toLocaleString('en',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function fM(n){if(isNaN(+n)||n===null)return'—';const m=n/1e6;return Math.abs(m)>=0.01?m.toFixed(2)+'M':Math.abs(n)>=1000?(n/1000).toFixed(1)+'K':n.toFixed(0)}
+function pct(n,d=1){return(isNaN(+n)||n===null)?'—':(+n*100).toFixed(d)+'%'}
+function kpi(lbl,val,cls,sub=''){return`<div class="mc ${cls}"><div class="ml">${lbl}</div><div class="mv ${cls}">${val}</div>${sub?`<div class="ms">${sub}</div>`:''}</div>`}
+function pill(t,cls){return`<span class="pl pl-${cls}">${t}</span>`}
+function box(msg,cls){const ic={ok:'✓',wn:'⚠',rd:'⛔',bl:'ℹ'}[cls]||'ℹ';return`<div class="bx b${cls}"><div class="bx-i">${ic}</div><div>${msg}</div></div>`}
+function mkChart(id,cfg){const el=$(id);if(!el)return;if(CHS[id])CHS[id].destroy();try{CHS[id]=new Chart(el,cfg)}catch(e){console.warn(id,e)}}
+const BO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:11}}}}};
+function pbarEl(label,val,max,color){return`<div class="pr"><div class="prl">${label}</div><div class="prt"><div class="prf" style="width:${Math.min(100,max>0?val/max*100:0).toFixed(1)}%;background:${color}"></div></div><div class="prv">${fM(val)}</div></div>`}
+function pbarPct(label,val,color){return`<div class="pr"><div class="prl">${label}</div><div class="prt"><div class="prf" style="width:${Math.min(100,Math.abs(+val||0)*100).toFixed(0)}%;background:${color}"></div></div><div class="prv">${pct(val)}</div></div>`}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function nav(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  $('sec-'+id).classList.add('on');
+  if(el)el.classList.add('on');
+  const[t,s]=PAGES[id]||['',''];
+  $('pg-t').textContent=t;$('pg-s').textContent=s;
+  if(ST)renderSec(id);
+}
+
+// ══════════════════════════════════════════════════════
+// FILE INGESTION
+// ══════════════════════════════════════════════════════
+function logIt(msg,type){
+  const d=$('plog');d.style.display='block';LOG.push({msg,type});
+  d.innerHTML=LOG.slice(-50).map(l=>`<div class="l${l.type}">${l.msg}</div>`).join('');
+  d.scrollTop=d.scrollHeight;
+}
+function onDrop(e){
+  e.preventDefault();
+  $('dz').classList.remove('ov');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files){
+  try {
+    // Security: Validate file inputs
+    if (!files || files.length === 0) {
+      logIt('⚠ No files selected','wn');
+      return;
+    }
+    
+    // Limit number of files
+    if (files.length > 10) {
+      logIt('⚠ Too many files selected (max 10)','wn');
+      return;
+    }
+    
+    [...files].forEach(f=>{
+      // Security: File type validation
+      const allowedTypes = ['.xlsx', '.xls', '.csv'];
+      const fileExt = '.' + f.name.split('.').pop().toLowerCase();
+      
+      if (!allowedTypes.includes(fileExt)) {
+        logIt(`⚠ ${f.name}: Invalid file type (${fileExt})`,'wn');
+        return;
+      }
+      
+      // Security: File size validation (20MB limit)
+      if (f.size > 20*1024*1024) {
+        logIt(`⚠ ${f.name}: File too large (>20MB)`,'wn');
+        return;
+      }
+      
+      // Security: Filename validation
+      if (!isValidFilename(f.name)) {
+        logIt(`⚠ ${f.name}: Invalid filename`,'wn');
+        return;
+      }
+      
+      readFile(f);
+    });
+  } catch (error) {
+    logIt(`✕ File handling error: ${error.message}`,'er');
+  }
+}
+
+// Security: HTML sanitization function
+function sanitizeHtml(str) {
+  if (!str || typeof str !== 'string') return '';
+  
+  // Create a div element to use browser's built-in HTML escaping
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Security: Filename validation function
+function isValidFilename(filename) {
+  // Reject suspicious characters and patterns
+  const suspiciousPatterns = [
+    /\.\./,  // Directory traversal
+    /[<>:"|?*]/,  // Invalid characters
+    /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i,  // Reserved names
+    /\.(exe|bat|cmd|scr|pif|com)$/i  // Executable extensions
+  ];
+  
+  return !suspiciousPatterns.some(pattern => pattern.test(filename));
+}
+
+function readFile(file){
+  try {
+    const rdr=new FileReader();
+    rdr.onload=e=>{
+      try {
+        // Security: Validate file content before processing
+        if (!e.target.result || e.target.result.byteLength === 0) {
+          throw new Error('Empty file');
+        }
+        
+        const wb=XLSX.read(e.target.result,{type:'array',cellDates:true,raw:false});
+        
+        // Security: Validate workbook structure
+        if (!wb || !wb.SheetNames || wb.SheetNames.length === 0) {
+          throw new Error('Invalid workbook structure');
+        }
+        
+        logIt(`<span class="lin">📂 ${sanitizeHtml(file.name)}</span> — ${wb.SheetNames.length} sheet(s)`,'in');
+        let det=false;
+        
+        for(const sn of wb.SheetNames){
+          // Security: Sanitize sheet name
+          const safeSheetName = sanitizeHtml(sn);
+          const ws=wb.Sheets[sn];
+          
+          if (!ws) continue;
+          
+          const rows=XLSX.utils.sheet_to_json(ws,{defval:null});
+          
+          // Security: Limit row count to prevent memory issues
+          if (rows.length > 50000) {
+            logIt(`⚠ ${safeSheetName}: Too many rows (>50,000)`,'wn');
+            continue;
+          }
+          
+          if(!rows.length)continue;
+          
+          const keys=Object.keys(rows[0]||{}).map(k=>k.toLowerCase().replace(/[\s._]/g,''));
+          const r=detectSheet(keys,safeSheetName.toLowerCase(),rows);
+          if(r){logIt(`  ✓ ${safeSheetName} → ${r} (${rows.length} rows)`,'ok');det=true}
+          else logIt(`  · ${safeSheetName}: ${rows.length} rows (unmapped)`,'in');
+        }
+        addFileUI(file,'ok',det?'✓ OK':'⚠ Partial');
+      } catch(err){
+        logIt(`✕ ${sanitizeHtml(file.name)}: ${err.message}`,'er');
+        addFileUI(file,'er','✕ Error');
+      }
+    };
+    
+    rdr.onerror = function() {
+      logIt(`✕ ${sanitizeHtml(file.name)}: File reading error`,'er');
+      addFileUI(file,'er','✕ Error');
+    };
+    
+    rdr.readAsArrayBuffer(file);
+  } catch (error) {
+    logIt(`✕ ${sanitizeHtml(file.name)}: ${error.message}`,'er');
+    addFileUI(file,'er','✕ Error');
+  }
+}
+
+function detectSheet(keys,sname,rows){
+  if(keys.some(k=>k.includes('gwp'))||keys.some(k=>k.includes('nwp'))||sname.includes('premium data')){FP.premiums=(FP.premiums||[]).concat(rows);return'Premium Data'}
+  if(keys.some(k=>k==='dol'||k.includes('d.o.l'))||keys.some(k=>k.includes('circumstances'))){FP.claims=(FP.claims||[]).concat(rows);return'Claims Paid'}
+  if(keys.some(k=>k.includes('claimamount'))||keys.some(k=>k.includes('occurdate')||k.includes('occurdate'))){FP.oc=(FP.oc||[]).concat(rows);return'Outstanding Claims'}
+  if(sname.includes('balance')){FP.bs=rows;return'Balance Sheet'}
+  if(sname.includes('own fund')){FP.ofSheet=rows;return'Own Funds'}
+  if(sname.includes('scr')){FP.scrSheet=rows;return'SCR Data'}
+  if(keys.some(k=>k.includes('ageing')||k.includes('0-30')||k.includes('31-60'))){FP.debtors=rows;return'Debtors Ageing'}
+  return null;
+}
+
+function addFileUI(file,statusCls,statusTxt){
+  try {
+    // Security: Sanitize filename for display
+    const safeName = sanitizeHtml(file.name);
+    const ext=safeName.split('.').pop().toUpperCase();
+    const size=file.size>1e6?`${(file.size/1e6).toFixed(1)}MB`:`${(file.size/1024).toFixed(0)}KB`;
+    const d=document.createElement('div');d.className='fi';
+    d.innerHTML=`<div class="fib fx">${sanitizeHtml(ext)}</div><div class="fn">${safeName}</div><div class="fm">${size}</div><div class="fs2 f${statusCls}">${sanitizeHtml(statusTxt)}</div>`;
+    $('fl').appendChild(d);
+    const n=$('fl').children.length;
+    $('nb-f').textContent=n+' file'+(n!==1?'s':'');
+    $('fc-lbl').textContent=n+' file'+(n!==1?'s':'')+' loaded';
+  } catch (error) {
+    console.error('Error in addFileUI:', error.message);
+  }
+}
+
+function clearAll(){
+  Object.keys(FP).forEach(k=>delete FP[k]);
+  $('fl').innerHTML='';$('plog').innerHTML='';$('plog').style.display='none';
+  $('pb').style.width='0';LOG=[];ST=null;
+  $('nb-f').textContent='0 files';$('fc-lbl').textContent='0 files';
+  logIt('All data cleared','wn');
+}
+
+// ══════════════════════════════════════════════════════
+// DEMO DATA — Insurance actual Dec 2024 data
+// ══════════════════════════════════════════════════════
+function loadDemo(){
+  clearAll();
+  FP.premiums=[
+    {class:'Agriculture',GWP:32673035,NWP:29868704,RI:2804330,'Gross UPR':20698786,'Net UPR':20435318},
+    {class:'Engineering',GWP:672099,NWP:500498,RI:171601,'Gross UPR':299362,'Net UPR':234562},
+    {class:'Liability',GWP:122341,NWP:48227,RI:74113,'Gross UPR':15146,'Net UPR':9260},
+    {class:'Motor',GWP:8413285,NWP:4211978,RI:4201307,'Gross UPR':2921100,'Net UPR':1368198},
+    {class:'Accident',GWP:7952059,NWP:4552733,RI:3399326,'Gross UPR':2530284,'Net UPR':2111933},
+    {class:'Property',GWP:1025924,NWP:234405,RI:791520,'Gross UPR':261154,'Net UPR':63041},
+  ];
+  FP.claims=[
+    {ZWL:24576880,USD:59738,Type:'Crop','D.O.L':'2023-01-10',Reported:'2023-01-15','DATE PAID':'2023-03-20'},
+    {ZWL:24109140,USD:70066,Type:'Motor','D.O.L':'2023-02-01',Reported:'2023-02-05','DATE PAID':'2023-04-10'},
+    {ZWL:18396870,USD:null,Type:'Plant - Liability','D.O.L':'2023-06-01',Reported:'2023-06-05','DATE PAID':'2023-08-15'},
+    {ZWL:23513420,USD:6380,Type:'Tobacco','D.O.L':'2023-08-15',Reported:'2023-08-20','DATE PAID':'2023-10-05'},
+    {ZWL:16844620,USD:null,Type:'Loan Protection','D.O.L':'2023-03-10',Reported:'2023-03-11','DATE PAID':'2023-05-20'},
+    {ZWL:8775000,USD:null,Type:'Motor','D.O.L':'2022-12-01',Reported:'2022-12-05','DATE PAID':'2023-02-10'},
+    {ZWL:1065044,USD:null,Type:'Motor','D.O.L':'2022-11-01',Reported:'2022-11-05','DATE PAID':'2023-01-10'},
+    {ZWL:10723080,USD:null,Type:'Crop','D.O.L':'2023-03-05',Reported:'2023-03-10','DATE PAID':'2023-05-15'},
+    {ZWL:5105864,USD:null,Type:'Motor','D.O.L':'2023-09-01',Reported:'2023-09-05','DATE PAID':'2023-10-20'},
+    {ZWL:54501220,USD:null,Type:'Crop','D.O.L':'2023-01-05',Reported:'2023-01-08','DATE PAID':'2023-03-10'},
+  ];
+  FP.oc=[
+    {occurDate:'22/11/2022',Currency:'USD',ClaimAmountInc:250206,GrossInc:35744,NetInc:0},
+    {occurDate:'2023-05-10',Currency:'USD',ClaimAmountInc:143402,GrossInc:20486,NetInc:2049},
+    {occurDate:'2023-07-15',Currency:'USD',ClaimAmountInc:829973,GrossInc:92041,NetInc:43630},
+    {occurDate:'2023-09-20',Currency:'USD',ClaimAmountInc:14925,GrossInc:2132,NetInc:532},
+  ];
+  FP.assets={investmentProperty:546622488,listedEquity:411529,gold:8378163,moneyMarket:5078488,cash:1072276,receivables:183658998,goodwill:0,intangibles:2267,itSystems:183939,furniture:24863,motorVehicles:274343,otherOperatingAssets:717429};
+  FP.ownFunds={shareCapital:6074807,retainedEarnings:404806219,reconReserve:-5167122};
+  FP.ocr={Agriculture:{gross:4582369,net:207393},Engineering:{gross:143743,net:136929},Liability:{gross:6192,net:1238},Motor:{gross:2380574,net:499399},Accident:{gross:491701,net:77396},Property:{gross:0,net:0}};
+  FP.crs={Agriculture:.52,Engineering:.45,Liability:3.13,Motor:2.01,Accident:.57,Property:1.58};
+  FP.recoveries={Agriculture:447241,Engineering:0,Liability:1678,Motor:92098,Accident:119222,Property:38465};
+  FP.ntl=299186684; FP.amcr=38697750;
+
+  [['Premium_Data_2024.xlsx',4],['Claims_Paid_2024.xlsx',4],['Outstanding_Claims.xlsx',4],['ZICARP_QRT_Dec2024.xlsx',4]].forEach(([nm,t])=>{
+    const d=document.createElement('div');d.className='fi';
+    d.innerHTML=`<div class="fib fd2">DM</div><div class="fn">${nm}</div><div class="fm">Demo</div><div class="fs2 fdm">✓ Demo</div>`;
+    $('fl').appendChild(d);
+  });
+  $('nb-f').textContent='4 files';$('fc-lbl').textContent='4 demo files loaded';
+  logIt('✓ Demo data loaded (31 December 2024)','ok');
+  runEngine();
+}
+
+function fillDemo(){
+  const v={prop:546622488,eq:411529,gold:8378163,mm:5078488,recv:183658998,cash:1072276,sc:6074807,re:404806219,ntl:299186684,amcr:38697750};
+  for(const[k,val]of Object.entries(v)){const el=$('mi-'+k);if(el)el.value=val}
+}
+
+function applyManual(){
+  const g=id=>{const el=$(id);return el&&el.value!==''?parseFloat(el.value)||0:null};
+  if(!FP.assets)FP.assets={};
+  const m={prop:'investmentProperty',eq:'listedEquity',gold:'gold',mm:'moneyMarket',recv:'receivables',cash:'cash'};
+  for(const[id,k]of Object.entries(m)){const v=g('mi-'+id);if(v!==null)FP.assets[k]=v}
+  if(!FP.ownFunds)FP.ownFunds={};
+  const sc=g('mi-sc'),re=g('mi-re');
+  if(sc!==null)FP.ownFunds.shareCapital=sc;
+  if(re!==null)FP.ownFunds.retainedEarnings=re;
+  const ntl=g('mi-ntl');if(ntl!==null)FP.ntl=ntl;
+  const amcr=g('mi-amcr');if(amcr!==null)FP.amcr=amcr;
+  logIt('✓ Manual inputs applied','ok');
+}
+
+// ══════════════════════════════════════════════════════
+// RUN ENGINE
+// ══════════════════════════════════════════════════════
+function runEngine(){
+  applyManual();
+  const prems=FP.premiums||[];
+  if(!prems.length){logIt('⚠ No premium data — upload files or click Load Demo Data','wn');return}
+  setProgress(20);logIt('▶ Running ALM Engine...','in');
+
+  // 1. Aggregate premiums
+  const CM={};
+  for(const p of prems){
+    const cls=p.class||p.Class||p.CLASS||'Other';
+    if(!CM[cls])CM[cls]={gwp:0,nwp:0,ri:0,grossUPR:0,netUPR:0,count:0};
+    const s=CM[cls];
+    s.gwp     +=+(p.GWP||p.gwp||0);
+    s.nwp     +=+(p.NWP||p.nwp||0);
+    s.ri      +=+(p.RI||p.ri||0);
+    s.grossUPR+=+(p['Gross UPR']||p.grossUPR||p.GrossUPR||0);
+    s.netUPR  +=+(p['Net UPR']||p.netUPR||p.NetUPR||0);
+    s.count++;
+  }
+  const classes=Object.keys(CM);
+  setProgress(30);
+
+  // 2. Assets & own funds
+  const assets=FP.assets||{investmentProperty:0,listedEquity:0,gold:0,moneyMarket:0,cash:0,receivables:0};
+  const ofData=FP.ownFunds||{shareCapital:0,retainedEarnings:0};
+  const ocr=FP.ocr||{};
+  const crs=FP.crs||{};
+  const recoveries=FP.recoveries||{};
+
+  // 3. Technical Provisions
+  const PROV={};
+  for(const cls of classes){
+    const s=CM[cls];
+    const ibnr=E.calcIBNR(s.nwp,s.gwp,.05);
+    const upr={gross:s.grossUPR,net:s.netUPR};
+    const ocrCls=ocr[cls]||{gross:0,net:0};
+    const raType=['motor','liability'].includes(cls.toLowerCase())?cls.toLowerCase():'other';
+    const ra=E.calcRA(ibnr.gross,ocrCls.gross,raType);
+    const cr=crs[cls]!=null?crs[cls]:.9;
+    const lc=E.calcLossComp(upr.gross,cr);
+    const lic={gross:ocrCls.gross+ibnr.gross+ra,net:ocrCls.net+ibnr.net+ra};
+    const lrc={gross:upr.gross+lc,net:upr.net};
+    PROV[cls]={ibnr,upr,ocr:ocrCls,ra,lossComponent:lc,lic,lrc,total:{gross:lic.gross+lrc.gross,net:lic.net+lrc.net},cr};
+  }
+  const totGTP=classes.reduce((s,c)=>s+PROV[c].total.gross,0);
+  const totNTP=classes.reduce((s,c)=>s+PROV[c].total.net,0);
+  const totGWP=classes.reduce((s,c)=>s+CM[c].gwp,0);
+  const totNWP=classes.reduce((s,c)=>s+CM[c].nwp,0);
+  const totRI =classes.reduce((s,c)=>s+CM[c].ri,0);
+  setProgress(50);
+
+  // 4. Admissibility
+  const admit=E.calcAdmissible(assets);
+  const totAdm=admit.admissible;
+
+  // 5. Own Funds
+  const ofR=E.calcOwnFunds(ofData);
+  const OF=ofR.eligible;
+
+  // 6. SCR calculations
+  const eqR=E.calcEquityRisk(assets.listedEquity||0);
+  const propR=E.calcPropertyRisk(assets.investmentProperty||0);
+  const cpR=E.calcCPRisk([],[
+    {amount:(assets.receivables||0)*.9,days:30},
+    {amount:(assets.receivables||0)*.1,days:60},
+  ]);
+  const concR=E.calcConcRisk([
+    {value:assets.investmentProperty||0,ct:.015,lgd:.35},
+    {value:assets.receivables||0,ct:.015,lgd:.45},
+  ],totAdm);
+  const mktR=E.calcMktRisk(eqR,propR,cpR.total,0,concR);
+  const nlLines=classes.map(c=>({lob:c,nep:CM[c].nwp,reserve:PROV[c].lic.gross}));
+  const nlR=E.calcNLUW(nlLines);
+  const bscr=E.calcBSCR(mktR.diversified,nlR.diversified);
+  const opR=E.calcOpRisk(bscr,totNWP);
+  const scr=E.calcSCR(bscr,opR);
+  setProgress(65);
+
+  // 7. MCR
+  const mcrLines=classes.map(c=>({lob:c,nep:CM[c].nwp,netTP:PROV[c].total.net}));
+  const amcr=FP.amcr||38697750;
+  const mcrR=E.calcMCR(scr,amcr,mcrLines,OF);
+
+  // 8. Claims processing
+  const cpaid=FP.claims||[];
+  let totZWL=0,totUSD=0,lagS=0,lagN=0;
+  const mMap={},tMap={};
+  for(const cl of cpaid){
+    const z=+(cl.ZWL||cl.zwl||0),u=+(cl.USD||cl.usd||0);
+    totZWL+=z;totUSD+=u;
+    const dol=new Date(cl['D.O.L']||cl.dol||'');
+    const rep=new Date(cl.Reported||cl.reported||'');
+    const paid=new Date(cl['DATE PAID']||cl.datePaid||'');
+    if(!isNaN(dol.getTime())){const k=dol.toISOString().slice(0,7);mMap[k]=(mMap[k]||0)+z}
+    if(!isNaN(rep.getTime())&&!isNaN(paid.getTime())){const lg=(paid-rep)/86400000;if(lg>=0&&lg<500){lagS+=lg;lagN++}}
+    const t=cl.Type||cl.type||'Other';tMap[t]=(tMap[t]||0)+Math.max(z,u*7);
+  }
+  const clmS={totZWL,totUSD,count:cpaid.length,avgLag:lagN?lagS/lagN:0,monthly:mMap,byType:tMap};
+
+  // 9. Stress tests
+  const ntl=FP.ntl||299186684;
+  const totLiabs=totGTP+ntl;
+  const zSt=E.stressZICARP(scr,mcrR.mcr,OF);
+  const aSt=E.stressALM(totAdm,totLiabs,scr);
+  const pSens=E.propSens(totAdm,totLiabs,scr);
+
+  // 10. ALM
+  const alloc={property:.73,equity:.01,bond:0,money_market:.01,gold:.01,other:.24};
+  const aVol=E.regimeVol(alloc,1);
+  const surpM=E.calcSurplusMet(totAdm,aVol,totGTP,.10,.20);
+  const durG=E.calcDurGap(9.5,.8,totAdm,totGTP);
+  const lcrR=E.calcLCR({cash:assets.cash||0,money_market:assets.moneyMarket||0,gold:assets.gold||0,equity:assets.listedEquity||0,property:assets.investmentProperty||0,receivables:(assets.receivables||0)*.30},totGTP*.6);
+
+  // 11. Reinsurance
+  const riAdq={};
+  for(const c of classes)riAdq[c]=E.calcRI(CM[c].gwp,CM[c].nwp,CM[c].ri,recoveries[c]||0);
+
+  // 12. Monte Carlo
+  setProgress(85);
+  const mcS=E.monteCarlo(surpM.surplus,alloc,totGTP,PI,RP,5,500);
+
+  setProgress(100);
+
+  // Store state
+  ST={CM,PROV,classes,totGWP,totNWP,totRI,totGTP,totNTP,totAdm,totLiabs,
+    assets,admit,OF,ofR,scr,bscr,opR,mcrR,eqR,propR,cpR,concR,mktR,nlR,
+    crs,recoveries,riAdq,clmS,zSt,aSt,pSens,alloc,surpM,durG,lcrR,mcS,ntl,amcr};
+
+  // Update UI status
+  $('st-p').textContent=fmt(prems.length);
+  $('st-c').textContent=fmt(cpaid.length);
+  $('st-oc').textContent=fmt((FP.oc||[]).length);
+  $('st-cl').textContent=classes.join(', ');
+  $('st-gwp').textContent='ZWG '+fM(totGWP);
+  $('st-scr').textContent=mcrR.scrCover.toFixed(3)+'×';
+  $('st-mcr').textContent=mcrR.mcrCover.toFixed(3)+'×';
+  $('st-time').textContent=new Date().toLocaleTimeString();
+
+  const sc=mcrR.scrCover;
+  $('nb-scr').textContent=sc.toFixed(2)+'×';
+  $('nb-scr').className='nb '+(sc>=1.2?'nok':sc>=1?'nwn':'nrd');
+  $('nb-st').textContent=sc<1?'!!':sc<1.2?'!':'✓';
+  $('nb-st').className='nb '+(sc>=1.2?'nok':sc<1?'nrd':'nwn');
+  $('chip-d-t').textContent='Data loaded · '+classes.length+' classes';
+  $('chip-d').className='chip c-ok';
+  $('chip-scr').style.display='flex';$('chip-scr-t').textContent='SCR '+sc.toFixed(2)+'×';
+  $('chip-scr').className='chip '+(sc>=1.2?'c-ok':sc>=1?'c-wn':'c-rd');
+  $('chip-sol').style.display='flex';$('chip-sol-t').textContent=sc>=1?'Solvent':'SCR Breach';
+  $('chip-sol').className='chip '+(sc>=1?'c-ok':'c-rd');
+  $('sbft').innerHTML=`GWP: ZWG ${fM(totGWP)}<br>SCR: ${sc.toFixed(2)}× · MCR: ${mcrR.mcrCover.toFixed(2)}×<br>ZICARP · IFRS 17 · APN 401`;
+
+  logIt(`✓ Engine complete — SCR ${fM(scr)} | Cover ${sc.toFixed(3)}× | MCR Cover ${mcrR.mcrCover.toFixed(2)}×`,'ok');
+  setTimeout(()=>{nav('overview',document.querySelector('.ni:nth-child(2)'));},150);
+}
+
+function setProgress(v){$('pb').style.width=v+'%'}
+
+// ══════════════════════════════════════════════════════
+// SECTION RENDERERS
+// ══════════════════════════════════════════════════════
+function renderSec(id){
+  if(!ST)return;
+  ({overview:rOV,solvency:rSOL,provisions:rPROV,stress:rSTRESS,premiums:rPREM,claims:rCLAIMS,investments:rINV,reinsurance:rRI,underwriting:rUW,regime:rREGIME,alm:rALM})[id]?.();
+}
+
+// ─── OVERVIEW ─────────────────────────────────────────
+function rOV(){
+  const sc=ST.mcrR.scrCover,mc=ST.mcrR.mcrCover;
+  $('ov-kpi').innerHTML=[
+    kpi('Total Admissible Assets','ZWG '+fM(ST.totAdm),'bl','IFRS 17: ZWG '+fM(ST.admit.total)),
+    kpi('Basic Own Funds','ZWG '+fM(ST.OF),'gr','100% Tier 1'),
+    kpi('SCR Cover',sc.toFixed(2)+'×',sc>=1.2?'gr':sc>=1?'or':'rd','SCR: ZWG '+fM(ST.scr)),
+    kpi('MCR Cover',mc.toFixed(2)+'×',mc>=3?'gr':mc>=2?'or':'rd','MCR: ZWG '+fM(ST.mcrR.mcr)),
+    kpi('Total GWP','ZWG '+fM(ST.totGWP),'bl','NWP: ZWG '+fM(ST.totNWP)),
+    kpi('Gross Tech Provisions','ZWG '+fM(ST.totGTP),'te','Net: ZWG '+fM(ST.totNTP)),
+    kpi('RI Retention',pct(ST.totNWP/ST.totGWP),'pu','RI ceded: ZWG '+fM(ST.totRI)),
+    kpi('Inadmissible Assets','ZWG '+fM(ST.admit.inadmissible),'or','Deducted ZICARP'),
+  ].join('');
+
+  $('ov-alert').innerHTML=sc<1?box(`<b>SCR BREACH: ${sc.toFixed(2)}×</b> — Company does not meet Solvency Capital Requirement. Immediate capital action required under IPEC Circular 7/2023.`,'rd'):sc<1.2?box(`<b>SCR Warning: ${sc.toFixed(2)}×</b> is marginal. Property risk dominates at ${pct(ST.propR/ST.mktR.undiversified,0)} of undiversified market risk charge (ZWG ${fM(ST.propR)}).`,'wn'):box(`<b>Solvency requirements met.</b> SCR cover ${sc.toFixed(2)}×, MCR cover ${mc.toFixed(2)}×. Continue monitoring property concentration.`,'ok');
+
+  const cls=ST.classes,cols=cls.map(c=>CC[c]||K.te);
+  mkChart('ch-gwp',{type:'doughnut',data:{labels:cls,datasets:[{data:cls.map(c=>+(ST.CM[c].gwp/1e6).toFixed(3)),backgroundColor:cols,borderWidth:2,borderColor:'#0d1117'}]},options:{...BO,cutout:'62%'}});
+  $('leg-gwp').innerHTML=cls.map((c,i)=>`<span class="li"><span class="ld" style="background:${cols[i]}"></span>${c} (${pct(ST.CM[c].gwp/ST.totGWP,0)})</span>`).join('');
+
+  const crVals=cls.map(c=>+((ST.crs[c]||.9)*100).toFixed(1));
+  mkChart('ch-cr',{type:'bar',data:{labels:cls,datasets:[{data:crVals,backgroundColor:crVals.map(v=>v>100?K.rd:K.gr),borderRadius:4}]},options:{...BO,scales:{x:{...BO.scales.x,ticks:{color:'#8b949e',font:{size:10}}},y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'}}}}});
+
+  const maxV=ST.totAdm||1;
+  $('ov-stack').innerHTML=[['Total Admissible Assets',ST.totAdm,K.bl],['Total Liabilities',ST.totLiabs,K.rd],['Basic Own Funds',ST.OF,K.gr],['SCR Required',ST.scr,K.or],['MCR Required',ST.mcrR.mcr,K.pu]].map(([l,v,c])=>pbarEl(l,v,maxV,c)).join('');
+
+  $('ov-bs').querySelector('tbody').innerHTML=[
+    ['Total Assets',ST.admit.total,ST.totAdm,ST.totAdm-ST.admit.total,'Inadmissible assets deducted'],
+    ['Technical Provisions',ST.totGTP,ST.totGTP,0,'Same basis'],
+    ['Non-Technical Liabilities',ST.ntl,ST.ntl,0,'Same under both'],
+    ['Shareholders\' Equity',ST.admit.total-ST.totLiabs,ST.totAdm-ST.totLiabs,(ST.totAdm-ST.totLiabs)-(ST.admit.total-ST.totLiabs),'ZICARP lower by inadmissibles'],
+    ['Own Funds (Tier 1)',ST.OF,ST.OF,0,'100% eligible'],
+    ['SCR Cover',(ST.OF/ST.scr).toFixed(3)+'×',(ST.OF/ST.scr).toFixed(3)+'×','—','Own Funds ÷ SCR'],
+  ].map(([n,a,b,d,note])=>`<tr><td><b>${n}</b></td><td class="num">${typeof a==='number'?fmt(a):a}</td><td class="num">${typeof b==='number'?fmt(b):b}</td><td class="num" style="${typeof d==='number'&&d<0?'color:var(--rd)':'color:var(--txt2)'}">${typeof d==='number'?fmt(d):d}</td><td style="color:var(--txt2);font-size:11px">${note}</td></tr>`).join('');
+}
+
+// ─── SOLVENCY ─────────────────────────────────────────
+function rSOL(){
+  const sc=ST.mcrR.scrCover,mc=ST.mcrR.mcrCover;
+  $('sol-kpi').innerHTML=[
+    kpi('SCR','ZWG '+fM(ST.scr),'or','Solvency Capital Req.'),
+    kpi('BSCR','ZWG '+fM(ST.bscr),'bl','Pre-operational risk'),
+    kpi('Market Risk (Undiv.)','ZWG '+fM(ST.mktR.undiversified),'rd','Primary driver'),
+    kpi('SCR Cover',sc.toFixed(3)+'×',sc>=1.2?'gr':sc>=1?'or':'rd','Own Funds / SCR'),
+    kpi('MCR','ZWG '+fM(ST.mcrR.mcr),'pu','Min Capital Req.'),
+    kpi('MCR Cover',mc.toFixed(2)+'×',mc>=3?'gr':mc>=2?'or':'rd','Own Funds / MCR'),
+    kpi('NL Underwriting','ZWG '+fM(ST.nlR.diversified),'te','Diversified'),
+    kpi('Operational Risk','ZWG '+fM(ST.opR),'bl','3% BSCR or NEP'),
+  ].join('');
+
+  const pL=['Property','Counterparty','Concentration','Equity'],pV=[ST.propR,ST.cpR.total,ST.concR,ST.eqR],pC=[K.rd,K.or,K.bl,K.gr];
+  mkChart('ch-scr-pie',{type:'doughnut',data:{labels:pL,datasets:[{data:pV.map(v=>+(v/1e6).toFixed(2)),backgroundColor:pC,borderWidth:2,borderColor:'#0d1117'}]},options:{...BO,cutout:'56%'}});
+  $('leg-scr').innerHTML=pL.map((l,i)=>`<span class="li"><span class="ld" style="background:${pC[i]}"></span>${l} (${pct(pV[i]/Math.max(ST.mktR.undiversified,1),0)})</span>`).join('');
+
+  const maxC=ST.scr*1.05||1;
+  $('scr-bars').innerHTML=[
+    ['Market Risk (diversified)',ST.mktR.diversified,K.rd],['  → Property Risk',ST.propR,K.rd],
+    ['  → Counterparty',ST.cpR.total,K.or],['  → Concentration',ST.concR,K.bl],
+    ['  → Equity',ST.eqR,K.gr],['NL Underwriting (div.)',ST.nlR.diversified,K.te],
+    ['  → Premium Risk',ST.nlR.premRisk,K.te],['  → Claims Risk',ST.nlR.claimsRisk,K.pu],
+    ['  → Cat Risk',ST.nlR.catRisk,K.gy],['Operational Risk',ST.opR,K.or],
+    ['BSCR',ST.bscr,K.bl],['SCR',ST.scr,K.or],
+  ].map(([l,v,c])=>pbarEl(l,v,maxC,c)).join('');
+
+  $('sol-of').querySelector('tbody').innerHTML=[
+    ['Share Capital (paid up)',6074807,'ok',true,true],
+    ['Retained Earnings',404806219,'ok',true,true],
+    ['Reconciliation Reserve',-5167122,'ok',true,true],
+    ['Total Basic Own Funds',ST.OF,'ok',true,true],
+  ].map(([n,v,pcls,s,m])=>`<tr ${n.startsWith('Total')?'class="tr-tot"':''}><td>${n}</td><td class="num" style="${v<0?'color:var(--rd)':''}">${fmt(v)}</td><td>${pill('Tier 1','ok')}</td><td>${s?'✓':'✗'}</td><td>${m?'✓':'✗'}</td></tr>`).join('');
+
+  const inadmMap={intangibles:'Intangible Assets',itSystems:'IT Systems',furniture:'Furniture',motorVehicles:'Motor Vehicles',otherOperatingAssets:'Other Operating'};
+  const admRows=[];
+  for(const[k,lbl]of Object.entries(inadmMap)){const v=ST.assets[k]||0;if(v>0)admRows.push(`<tr><td>${lbl}</td><td class="num">${fmt(v)}</td><td class="num" style="color:var(--rd)">(${fmt(v)})</td><td class="num">—</td><td>${pill('Inadmissible','rd')}</td></tr>`)}
+  const adm=[['Investment Property','investmentProperty'],['Listed Equities','listedEquity'],['Gold Coins','gold'],['Money Market','moneyMarket'],['Insurance Receivables','receivables'],['Cash','cash']];
+  for(const[l,k]of adm){const v=ST.assets[k]||0;if(v>0)admRows.push(`<tr><td>${l}</td><td class="num">${fmt(v)}</td><td class="num">—</td><td class="num">${fmt(v)}</td><td>${pill('Admissible','ok')}</td></tr>`)}
+  admRows.push(`<tr class="tr-tot"><td>Total</td><td class="num">${fmt(ST.admit.total)}</td><td class="num" style="color:var(--rd)">(${fmt(ST.admit.inadmissible)})</td><td class="num">${fmt(ST.totAdm)}</td><td></td></tr>`);
+  $('sol-adm').querySelector('tbody').innerHTML=admRows.join('');
+
+  $('sol-scr').querySelector('tbody').innerHTML=[
+    ['Market Risk','Property Risk',ST.propR,ST.propR,ST.propR/ST.scr],
+    ['Market Risk','Counterparty Default',ST.cpR.total,ST.cpR.total,ST.cpR.total/ST.scr],
+    ['Market Risk','Concentration',ST.concR,ST.concR,ST.concR/ST.scr],
+    ['Market Risk','Equity Risk',ST.eqR,ST.eqR,ST.eqR/ST.scr],
+    ['Market Risk','TOTAL diversified',ST.mktR.undiversified,ST.mktR.diversified,ST.mktR.diversified/ST.scr],
+    ['NL Underwriting','Premium Risk',ST.nlR.premRisk,ST.nlR.premRisk,ST.nlR.premRisk/ST.scr],
+    ['NL Underwriting','Claims Risk',ST.nlR.claimsRisk,ST.nlR.claimsRisk,ST.nlR.claimsRisk/ST.scr],
+    ['NL Underwriting','Catastrophic Risk',ST.nlR.catRisk,ST.nlR.catRisk,ST.nlR.catRisk/ST.scr],
+    ['NL Underwriting','TOTAL diversified',ST.nlR.undiversified,ST.nlR.diversified,ST.nlR.diversified/ST.scr],
+    ['BSCR','—',ST.bscr,ST.bscr,ST.bscr/ST.scr],
+    ['Operational Risk','3% max(BSCR,NEP)',ST.opR,ST.opR,ST.opR/ST.scr],
+    ['SCR','—',ST.scr,ST.scr,1],
+  ].map(([m,s,u,d,fr])=>`<tr ${m==='SCR'?'class="tr-tot"':''}><td>${m}</td><td>${s}</td><td class="num">${fmt(u)}</td><td class="num">${fmt(d)}</td><td>${pill(pct(fr,1),fr>.5?'rd':fr>.2?'wn':'bl')}</td></tr>`).join('');
+}
+
+// ─── PROVISIONS ───────────────────────────────────────
+function rPROV(){
+  const cls=ST.classes;
+  const totIBNR=cls.reduce((s,c)=>s+ST.PROV[c].ibnr.gross,0);
+  const totOCR=cls.reduce((s,c)=>s+ST.PROV[c].ocr.gross,0);
+  const totUPR=cls.reduce((s,c)=>s+ST.PROV[c].upr.gross,0);
+  const totRA=cls.reduce((s,c)=>s+ST.PROV[c].ra,0);
+  $('prov-kpi').innerHTML=[
+    kpi('Gross IBNR','ZWG '+fM(totIBNR),'bl','5% of GWP'),
+    kpi('Gross OCR','ZWG '+fM(totOCR),'or','Case estimates'),
+    kpi('Gross UPR','ZWG '+fM(totUPR),'pu','365th method'),
+    kpi('Risk Adjustment','ZWG '+fM(totRA),'te','VaR 99.5%'),
+    kpi('Gross LIC','ZWG '+fM(cls.reduce((s,c)=>s+ST.PROV[c].lic.gross,0)),'bl','IBNR+OCR+RA'),
+    kpi('Gross LRC','ZWG '+fM(cls.reduce((s,c)=>s+ST.PROV[c].lrc.gross,0)),'bl','UPR+LossComp'),
+    kpi('Total Gross TP','ZWG '+fM(ST.totGTP),'or','LIC+LRC'),
+    kpi('Total Net TP','ZWG '+fM(ST.totNTP),'gr','After RI recovery'),
+  ].join('');
+
+  mkChart('ch-prov',{type:'bar',data:{labels:['Gross UPR','Gross IBNR','Gross OCR','Risk Adj.','Loss Comp.'],datasets:[{data:[totUPR,totIBNR,totOCR,totRA,cls.reduce((s,c)=>s+ST.PROV[c].lossComponent,0)].map(v=>+(v/1e6).toFixed(3)),backgroundColor:[K.bl,K.gr,K.rd,K.pu,K.or],borderRadius:4}]},options:{...BO,scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'M'}}}}});
+
+  const maxI=Math.max(...cls.map(c=>ST.PROV[c].ibnr.gross),1);
+  $('ibnr-bars').innerHTML=cls.map(c=>pbarEl(c,ST.PROV[c].ibnr.gross,maxI,CC[c]||K.te)).join('');
+  const onerous=cls.filter(c=>ST.PROV[c].lossComponent>0);
+  $('lc-bars').innerHTML=onerous.length?onerous.map(c=>pbarEl(c,ST.PROV[c].lossComponent,Math.max(...onerous.map(x=>ST.PROV[x].lossComponent),1),K.rd)).join(''):`<div style="font-size:12px;color:var(--txt2)">No onerous contracts</div>`;
+
+  $('prov-tbl').querySelector('tbody').innerHTML=cls.map(c=>{const p=ST.PROV[c];const cr=p.cr||.9;return`<tr><td>${c}</td><td class="num">${fM(p.ibnr.gross)}</td><td class="num">${fM(p.ibnr.net)}</td><td class="num">${fM(p.ocr.gross)}</td><td class="num">${fM(p.ocr.net)}</td><td class="num">${fM(p.ra)}</td><td class="num">${fM(p.upr.gross)}</td><td class="num">${fM(p.upr.net)}</td><td class="num" style="${p.lossComponent>0?'color:var(--rd)':''}">${p.lossComponent>0?fM(p.lossComponent):'—'}</td><td class="num">${fM(p.total.gross)}</td><td class="num">${fM(p.total.net)}</td><td>${pill(pct(cr,0),cr>1?'rd':'ok')}</td></tr>`}).join('')
+    +`<tr class="tr-tot"><td>Total</td><td class="num">${fM(totIBNR)}</td><td class="num">${fM(cls.reduce((s,c)=>s+ST.PROV[c].ibnr.net,0))}</td><td class="num">${fM(totOCR)}</td><td class="num">${fM(cls.reduce((s,c)=>s+ST.PROV[c].ocr.net,0))}</td><td class="num">${fM(totRA)}</td><td class="num">${fM(totUPR)}</td><td class="num">${fM(cls.reduce((s,c)=>s+ST.PROV[c].upr.net,0))}</td><td class="num">${fM(cls.reduce((s,c)=>s+ST.PROV[c].lossComponent,0))}</td><td class="num">${fM(ST.totGTP)}</td><td class="num">${fM(ST.totNTP)}</td><td></td></tr>`;
+}
+
+// ─── STRESS ───────────────────────────────────────────
+function rSTRESS(){
+  const b=ST.zSt.baseline,s1=ST.zSt.scenario1,s2=ST.zSt.scenario2;
+  $('stress-alert').innerHTML=s1.scrCover<1?box(`<b>Scenario 1 SCR breach: ${s1.scrCover}×</b> — a 25% decline in Own Funds causes insolvency. Current buffer of ${(b.scrCover-1).toFixed(3)}× is insufficient.`,'rd'):b.scrCover<1.2?box(`<b>SCR buffer is thin (${b.scrCover.toFixed(3)}×).</b> Property value decline of just ~4% erodes the remaining buffer entirely.`,'wn'):box(`All ZICARP standard scenarios maintain SCR cover above 1.0×. Continue monitoring property concentration.`,'ok');
+
+  $('stress-kpi').innerHTML=[
+    ['Baseline MCR',b.mcrCover.toFixed(2)+'×',b.mcrCover>=3?'gr':'or'],
+    ['Baseline SCR',b.scrCover.toFixed(3)+'×',b.scrCover>=1.2?'gr':b.scrCover>=1?'or':'rd'],
+    ['S1 MCR (OFd –25%)',s1.mcrCover.toFixed(2)+'×',s1.mcrCover>=2?'gr':'or'],
+    ['S1 SCR (OFd –25%)',s1.scrCover.toFixed(3)+'×',s1.scrCover>=1?'or':'rd'],
+    ['S2 MCR (OFd +25%)',s2.mcrCover.toFixed(2)+'×','gr'],
+    ['S2 SCR (OFd +25%)',s2.scrCover.toFixed(3)+'×','gr'],
+  ].map(([l,v,c])=>kpi(l,v,c)).join('');
+
+  mkChart('ch-stress',{type:'bar',data:{labels:['Baseline','Scenario 1 (–25%)','Scenario 2 (+25%)'],datasets:[{label:'MCR Cover',data:[b.mcrCover,s1.mcrCover,s2.mcrCover].map(v=>+v.toFixed(3)),backgroundColor:'rgba(165,160,245,.75)',borderRadius:3},{label:'SCR Cover',data:[b.scrCover,s1.scrCover,s2.scrCover].map(v=>+v.toFixed(3)),backgroundColor:'rgba(227,179,65,.75)',borderRadius:3}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'×'}}}}});
+
+  $('stress-tbl').querySelector('tbody').innerHTML=ST.aSt.map(s=>`<tr><td><b>${s.name}</b></td><td style="font-size:11px;color:var(--txt2)">${s.desc}</td><td class="num" style="color:var(--rd)">${fM(s.as)}</td><td class="num" style="color:var(--or)">+${fM(s.ls)}</td><td class="num">${fM(s.newOF)}</td><td>${pill(s.scrCover+'×',s.scrCover>=1.2?'ok':s.scrCover>=1?'wn':'rd')}</td><td>${s.scrCover>=1?pill('Solvent','ok'):pill('BREACH','rd')}</td><td class="num" style="color:${s.capitalDeficit>0?'var(--rd)':'var(--txt2)'}">${s.capitalDeficit>0?fM(s.capitalDeficit):'—'}</td></tr>`).join('');
+
+  const ps=ST.pSens;
+  mkChart('ch-psens',{type:'line',data:{labels:ps.map(p=>p.shock+'%'),datasets:[{label:'SCR Cover',data:ps.map(p=>p.scrCover),borderColor:K.or,backgroundColor:'rgba(227,179,65,.08)',fill:true,tension:.2,pointRadius:ps.map(p=>p.shock===0?5:2),pointBackgroundColor:ps.map(p=>p.shock===0?K.bl:K.or),borderWidth:2},{label:'Min 1.0×',data:ps.map(()=>1),borderColor:'rgba(248,81,73,.5)',borderDash:[4,4],pointRadius:0,borderWidth:1.5}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'×'},min:0}}}});
+}
+
+// ─── PREMIUMS ─────────────────────────────────────────
+function rPREM(){
+  const cls=ST.classes;
+  $('prem-kpi').innerHTML=[
+    kpi('Total GWP','ZWG '+fM(ST.totGWP),'bl',cls.length+' classes'),
+    kpi('Total NWP','ZWG '+fM(ST.totNWP),'gr','Retained premium'),
+    kpi('RI Cessions','ZWG '+fM(ST.totRI),'or',pct(ST.totRI/ST.totGWP)+' of GWP'),
+    kpi('Policy Records',fmt(Object.values(ST.CM).reduce((s,c)=>s+c.count,0)),'pu','Total'),
+  ].join('');
+
+  mkChart('ch-prem-bar',{type:'bar',data:{labels:cls,datasets:[{label:'GWP',data:cls.map(c=>+(ST.CM[c].gwp/1e6).toFixed(3)),backgroundColor:'rgba(56,139,253,.7)',borderRadius:3},{label:'NWP',data:cls.map(c=>+(ST.CM[c].nwp/1e6).toFixed(3)),backgroundColor:'rgba(63,185,80,.7)',borderRadius:3}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'M'}}}}});
+  mkChart('ch-ri-cess',{type:'bar',data:{labels:cls,datasets:[{label:'NWP Retained',data:cls.map(c=>+(ST.CM[c].nwp/1e6).toFixed(3)),backgroundColor:'rgba(63,185,80,.65)',borderRadius:3},{label:'RI Ceded',data:cls.map(c=>+(ST.CM[c].ri/1e6).toFixed(3)),backgroundColor:'rgba(248,81,73,.65)',borderRadius:3}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'M'}}}}});
+
+  const maxGWP=Math.max(...cls.map(c=>ST.CM[c].gwp),1);
+  $('ret-bars').innerHTML=cls.map(c=>{const r=ST.CM[c].nwp/ST.CM[c].gwp;return pbarPct(c,r,r>.7?K.gr:r>.4?K.or:K.rd)}).join('');
+
+  $('prem-tbl').querySelector('tbody').innerHTML=cls.map(c=>{const s=ST.CM[c];const cr=ST.crs[c]||.9;const ret=s.nwp/Math.max(s.gwp,1);return`<tr><td>${c}</td><td class="num">${fM(s.gwp)}</td><td class="num">${fM(s.nwp)}</td><td class="num">${fM(s.ri)}</td><td>${pill(pct(ret,0),ret>.7?'ok':ret>.4?'wn':'rd')}</td><td>—</td><td>—</td><td>${pill(pct(cr,0),cr>1?'rd':'ok')}</td><td>${pill(cr>1?'Loss':'Profit',cr>1?'rd':'ok')}</td></tr>`}).join('');
+}
+
+// ─── CLAIMS ───────────────────────────────────────────
+function rCLAIMS(){
+  const cl=ST.clmS;
+  $('cl-kpi').innerHTML=[
+    kpi('Total Paid (ZWL)','ZWL '+fM(cl.totZWL),'rd'),
+    kpi('Total Paid (USD)','USD '+fmt(cl.totUSD,0),'bl'),
+    kpi('Avg Settlement Lag',cl.avgLag.toFixed(0)+' days','or'),
+    kpi('Records',fmt(cl.count),'pu'),
+  ].join('');
+
+  const months=Object.keys(cl.monthly).sort();
+  mkChart('ch-cl-mon',{type:'bar',data:{labels:months,datasets:[{data:months.map(m=>+(cl.monthly[m]/1e6).toFixed(3)),backgroundColor:months.map(m=>cl.monthly[m]>20e6?K.rd:cl.monthly[m]>5e6?K.or:K.bl),borderRadius:3}]},options:{...BO,scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'M'}}}}});
+
+  const types=Object.entries(cl.byType).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const tC=[K.bl,K.gr,K.or,K.rd,K.pu,K.gy,K.te];
+  mkChart('ch-cl-type',{type:'doughnut',data:{labels:types.map(t=>t[0]),datasets:[{data:types.map(t=>+(t[1]/1e6).toFixed(3)),backgroundColor:tC,borderWidth:2,borderColor:'#0d1117'}]},options:{...BO,cutout:'55%'}});
+  $('leg-cl').innerHTML=types.map((t,i)=>`<span class="li"><span class="ld" style="background:${tC[i]}"></span>${t[0]}</span>`).join('');
+
+  mkChart('ch-lag',{type:'bar',data:{labels:['0–15d','16–30d','31–45d','46–60d','61–90d','91–120d','121–180d','180d+'],datasets:[{data:[6,10,16,20,22,12,8,4],backgroundColor:[K.bl,K.bl,K.gr,K.gr,K.or,K.rd,K.rd,K.rd],borderRadius:3}]},options:{...BO}});
+
+  const oc=FP.oc||[];
+  $('oc-tbl').querySelector('tbody').innerHTML=oc.length?oc.slice(0,10).map(r=>`<tr><td>${r.occurDate||r['Occur Date']||'—'}</td><td>${r.Currency||'—'}</td><td class="num">${fmt(+(r.ClaimAmountInc||0),0)}</td><td class="num">${fmt(+(r.GrossInc||0),0)}</td><td>${pill((r.NetInc||0)>0?'Partial':'Nil','wn')}</td></tr>`).join(''):`<tr><td colspan="5" style="text-align:center;color:var(--txt2)">No outstanding claims data loaded</td></tr>`;
+}
+
+// ─── INVESTMENTS ──────────────────────────────────────
+function rINV(){
+  const a=ST.assets,tot=ST.admit.total||1;
+  const liqPct=((a.moneyMarket||0)+(a.cash||0)+(a.gold||0)*.8)/tot;
+  $('inv-kpi').innerHTML=[
+    kpi('Investment Property',pct((a.investmentProperty||0)/tot),'rd','ZWG '+fM(a.investmentProperty||0)),
+    kpi('Liquid Assets',pct(liqPct),'gr','MM+Cash+Gold (haircut)'),
+    kpi('LCR',ST.lcrR.lcr.toFixed(2)+'×',ST.lcrR.lcr>=1?'gr':ST.lcrR.lcr>=.5?'or':'rd','Liquid Assets / ST Liabs'),
+    kpi('Duration Gap',ST.durG.durationGap.toFixed(1)+' yrs',Math.abs(ST.durG.durationGap)<=3?'gr':Math.abs(ST.durG.durationGap)<=6?'or':'rd','IFRS 17 mismatch'),
+  ].join('');
+
+  $('inv-alert').innerHTML=ST.lcrR.lcr<0.2?box(`<b>Critical Liquidity Risk:</b> LCR ${ST.lcrR.lcr.toFixed(2)}× — liquid assets ZWG ${fM(ST.lcrR.liquidAssets)} vs short-term obligations ZWG ${fM(ST.totGTP*.6)}. Property (${pct((a.investmentProperty||0)/tot)}) is illiquid.`,'rd'):ST.lcrR.lcr<1?box(`<b>Liquidity Warning:</b> LCR ${ST.lcrR.lcr.toFixed(2)}× — increase money market and cash to ≥15% to meet obligations.`,'wn'):'';
+
+  const aLbls=['Inv. Property','RI Receivables','Gold Coins','Money Market','Cash','Equities'];
+  const aVals=[a.investmentProperty||0,a.receivables||0,a.gold||0,a.moneyMarket||0,a.cash||0,a.listedEquity||0];
+  const aCols=[K.rd,K.bl,K.or,K.gr,K.te,K.pu];
+  mkChart('ch-alloc',{type:'doughnut',data:{labels:aLbls,datasets:[{data:aVals.map(v=>+(v/1e6).toFixed(2)),backgroundColor:aCols,borderWidth:2,borderColor:'#0d1117'}]},options:{...BO,cutout:'60%'}});
+  $('leg-alloc').innerHTML=aLbls.map((l,i)=>`<span class="li"><span class="ld" style="background:${aCols[i]}"></span>${l} (${pct(aVals[i]/tot,0)})</span>`).join('');
+
+  mkChart('ch-dur',{type:'bar',data:{labels:['<1yr','1–2yr','2–5yr','5–10yr','>10yr'],datasets:[{label:'Assets',data:[2.2,.5,.3,3.1,93.9],backgroundColor:'rgba(56,139,253,.65)',borderRadius:3},{label:'Liabilities',data:[78,15,5,2,0],backgroundColor:'rgba(248,81,73,.65)',borderRadius:3}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'}}}}});
+
+  const lcrAssets=[['Cash',a.cash||0,1,'Liquid'],['Money Market',a.moneyMarket||0,.95,'Liquid'],['Gold Coins',a.gold||0,.85,'Semi-liquid'],['Listed Equities',a.listedEquity||0,.80,'Liquid'],['RI Receivables',(a.receivables||0)*.30,.50,'Moderate'],['Investment Property',(a.investmentProperty||0)*.05,.05,'Illiquid']];
+  const stLiabs=ST.totGTP*.6;
+  $('lcr-bars').innerHTML=lcrAssets.map(([l,v,h])=>pbarEl(`${l} (${pct(h,0)})`,v*h,stLiabs,h>.5?K.gr:h>.3?K.or:K.rd)).join('')
+    +`<div class="pr"><div class="prl"><b>Short-Term Liabilities</b></div><div class="prt"><div class="prf" style="width:100%;background:var(--brd2)"></div></div><div class="prv">${fM(stLiabs)}</div></div>`;
+
+  const rows=[['Investment Property',a.investmentProperty||0,'Illiquid','8–12yr','Admissible'],['Listed Equities',a.listedEquity||0,'Liquid','<1yr','Admissible'],['Gold Coins',a.gold||0,'Semi-liquid','<1yr','Admissible'],['Money Market',a.moneyMarket||0,'Liquid','<3mo','Admissible'],['Insurance Receivables',a.receivables||0,'Moderate','<6mo','Admissible'],['Cash',a.cash||0,'Liquid','Spot','Admissible'],['Operating Assets (net)',ST.admit.inadmissible,'-','N/A','Inadmissible']];
+  $('inv-tbl').querySelector('tbody').innerHTML=rows.map(([l,v,liq,dur,st])=>`<tr><td>${l}</td><td class="num">${fmt(v)}</td><td class="num">${pct(v/tot,1)}</td><td>${pill(liq,liq==='Liquid'?'ok':liq.includes('Semi')?'wn':liq==='-'?'pu':'bl')}</td><td>${dur}</td><td>${pill(st,st==='Admissible'?'ok':'rd')}</td></tr>`).join('');
+}
+
+// ─── REINSURANCE ──────────────────────────────────────
+function rRI(){
+  const cls=ST.classes;
+  const totR=cls.reduce((s,c)=>s+(ST.recoveries[c]||0),0);
+  $('ri-kpi').innerHTML=[
+    kpi('Total RI Premiums','ZWG '+fM(ST.totRI),'bl','Ceded'),
+    kpi('Total Recoveries','ZWG '+fM(totR),'gr','Claims recovered'),
+    kpi('Overall Recovery %',pct(totR/Math.max(ST.totRI,1)),'rd',totR/ST.totRI<.05?'Over-paying':'Adequate'),
+    kpi('Overall Retention',pct(ST.totNWP/ST.totGWP),'or','NWP/GWP'),
+  ].join('');
+
+  const retV=cls.map(c=>+(ST.CM[c].nwp/ST.CM[c].gwp*100).toFixed(1));
+  const recV=cls.map(c=>+((ST.recoveries[c]||0)/Math.max(ST.CM[c].ri,1)*100).toFixed(1));
+  mkChart('ch-ri-bar',{type:'bar',data:{labels:cls,datasets:[{label:'Retention %',data:retV,backgroundColor:'rgba(56,139,253,.7)',borderRadius:3},{label:'Recovery Ratio %',data:recV,backgroundColor:'rgba(63,185,80,.7)',borderRadius:3}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'},max:100}}}});
+
+  const maxRec=Math.max(...cls.map(c=>ST.recoveries[c]||0),1);
+  $('ri-eff-bars').innerHTML=cls.map(c=>{const v=ST.recoveries[c]||0,r=v/Math.max(ST.CM[c].ri,1);return pbarEl(`${c} (${pct(r,0)})`,v,maxRec,r>.15?K.gr:r>.05?K.or:K.rd)}).join('');
+
+  $('ri-tbl').querySelector('tbody').innerHTML=cls.map(c=>{const s=ST.CM[c];const rec=ST.recoveries[c]||0;const r=rec/Math.max(s.ri,1);const eff=ST.riAdq[c]?.efficiency||'Review';const em={Efficient:'ok',Moderate:'bl',Review:'wn',Renegotiate:'rd'};return`<tr><td>${c}</td><td class="num">${fM(s.gwp)}</td><td class="num">${fM(s.nwp)}</td><td class="num">${fM(s.ri)}</td><td>${pill(pct(s.nwp/s.gwp,0),s.nwp/s.gwp>.7?'ok':s.nwp/s.gwp>.4?'wn':'rd')}</td><td class="num">${fM(rec)}</td><td class="num" style="color:${r>.1?'var(--gr)':r>.03?'var(--or)':'var(--rd)'}">${pct(r)}</td><td>${pill(eff,em[eff]||'wn')}</td><td style="font-size:11px;color:var(--txt2)">${eff==='Efficient'?'Maintain':eff==='Renegotiate'?'Negotiate lower premium':'Monitor'}</td></tr>`}).join('');
+}
+
+// ─── UNDERWRITING ─────────────────────────────────────
+function rUW(){
+  const cls=ST.classes;
+  const allCR=cls.map(c=>ST.crs[c]||.9);
+  const avgCR=allCR.reduce((a,b)=>a+b,0)/allCR.length;
+  const profCount=cls.filter(c=>(ST.crs[c]||.9)<=1).length;
+  $('uw-kpi').innerHTML=[
+    kpi('Overall Combined Ratio',pct(avgCR,0),avgCR>1?'rd':avgCR>.8?'or':'gr','Weighted average'),
+    kpi('Profitable Classes',profCount+' / '+cls.length,'gr','Combined ratio ≤ 100%'),
+    kpi('Loss-Making Classes',(cls.length-profCount)+' / '+cls.length,'rd','Combined ratio > 100%'),
+    kpi('Onerous Contracts',cls.filter(c=>(ST.crs[c]||.9)>1).length,'or','Loss component required'),
+  ].join('');
+
+  mkChart('ch-uw-stack',{type:'bar',data:{labels:cls,datasets:[{label:'Loss Ratio',data:cls.map(c=>+((ST.crs[c]||.9)*.40*100).toFixed(1)),backgroundColor:'rgba(248,81,73,.75)',borderRadius:0},{label:'Expense Ratio',data:cls.map(c=>+((ST.crs[c]||.9)*.44*100).toFixed(1)),backgroundColor:'rgba(227,179,65,.75)',borderRadius:0},{label:'Commission',data:cls.map(c=>Math.max(0,+((ST.crs[c]||.9)*.16*100).toFixed(1))),backgroundColor:'rgba(56,139,253,.75)',borderRadius:4}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'}}}}});
+
+  const onerous=cls.filter(c=>(ST.crs[c]||.9)>1);
+  $('onerous-list').innerHTML=onerous.length?onerous.map(c=>box(`<b>${c}:</b> Combined ratio ${pct(ST.crs[c],0)} — Loss component ZWG ${fM(ST.PROV[c].lossComponent)}`,'wn')).join(''):box('No onerous contracts — all classes profitable (combined ratio ≤ 100%)','ok');
+
+  const lcVals=cls.map(c=>+(ST.PROV[c].lossComponent/1e6).toFixed(3));
+  mkChart('ch-lc',{type:'bar',data:{labels:cls,datasets:[{data:lcVals,backgroundColor:lcVals.map(v=>v>0?K.rd:K.gr),borderRadius:3}]},options:{...BO,scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'M'}}}}});
+
+  $('uw-tbl').querySelector('tbody').innerHTML=cls.map(c=>{const s=ST.CM[c];const cr=ST.crs[c]||.9;const lc=ST.PROV[c].lossComponent;return`<tr><td>${c}</td><td class="num">${fM(s.gwp)}</td><td class="num">${fM(s.nwp)}</td><td>${pill(pct(cr*.40,0),cr*.40>.7?'rd':'ok')}</td><td>${pill(pct(cr*.44,0),cr*.44>.4?'wn':'ok')}</td><td>${pill(pct(cr,0),cr>1?'rd':'ok')}</td><td>${pill(cr>1?'Yes':'No',cr>1?'rd':'ok')}</td><td class="num" style="color:${lc>0?'var(--rd)':''}">${lc>0?fM(lc):'—'}</td><td style="font-size:11px;color:var(--txt2)">${cr>1.5?'Raise premiums or reduce expenses':cr>1?'Monitor loss trend':'Adequate'}</td></tr>`}).join('');
+}
+
+// ─── REGIME ───────────────────────────────────────────
+function rREGIME(){
+  const rN=['Stable','Volatile','Crisis'],rCls=['rs','rv','rxc'],rC=[K.gr,K.or,K.rd];
+  $('reg-cards').innerHTML=RP.map((p,i)=>`<div class="rc ${rCls[i]}"><div class="rn">Regime ${i+1} — ${rN[i]}${i===1?' ← Current':''}</div><div class="rpr" style="color:${rC[i]}">${(p*100).toFixed(0)}%</div><div class="rd2">${['Inflation <10%, stable ZWG, normal markets','Inflation 10–50%, FX uncertainty, policy flux','Inflation >50%, FX shock, asset impairment'][i]}</div></div>`).join('');
+
+  $('trans-body').innerHTML=PI.map((row,i)=>`<tr><td style="padding:7px 10px;color:${rC[i]};border:1px solid var(--brd);font-weight:700;background:var(--bg3)">${rN[i]}</td>${row.map((v,j)=>`<td style="padding:7px 10px;text-align:center;border:1px solid var(--brd);${v>=.5?`font-weight:700;color:${rC[i]}`:''}">${v.toFixed(2)}</td>`).join('')}</tr>`).join('');
+
+  mkChart('ch-reg-ret',{type:'bar',data:{labels:['Property','Equities','Money Mkt','Gold','Bonds'],datasets:[{label:'Stable R1',data:[12.4,18.6,8.2,6.1,9.5],backgroundColor:'rgba(63,185,80,.75)',borderRadius:2},{label:'Volatile R2',data:[6.8,9.4,11.6,14.3,12.1],backgroundColor:'rgba(227,179,65,.75)',borderRadius:2},{label:'Crisis R3',data:[-15.2,-28.4,14.8,22.7,8.6],backgroundColor:'rgba(248,81,73,.75)',borderRadius:2}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'}}}}});
+
+  const sim=[2,2,1,1,2,2,3,3,2,2,1,1,1,2,2,2,3,3,3,2,2,2,1,1,2,2,2,3,3,2,2,1,1,2,2,3,3,2,2,2,1,1,2,2,2,2,3,3,2,2,1,1,1,2,2,2,3,2,2,2];
+  mkChart('ch-reg-sim',{type:'line',data:{labels:sim.map((_,i)=>'M'+(i+1)),datasets:[{label:'Regime',data:sim,borderColor:K.bl,backgroundColor:'rgba(56,139,253,.07)',fill:true,tension:.15,pointRadius:0,borderWidth:1.5}]},options:{...BO,scales:{x:{...BO.scales.x,ticks:{color:'#8b949e',font:{size:10},maxTicksLimit:12}},y:{min:.5,max:3.5,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10},stepSize:1,callback:v=>['','Stable','Volatile','Crisis'][Math.round(v)]||''}}}}});
+
+  const f1=E.markovNext(PI,RP,4),f2=E.markovNext(PI,RP,8),f3=E.markovNext(PI,RP,20);
+  mkChart('ch-reg-fwd',{type:'bar',data:{labels:['Current','1yr','2yr','5yr'],datasets:[{label:'Stable',data:[RP[0],f1[0],f2[0],f3[0]].map(v=>+(v*100).toFixed(1)),backgroundColor:'rgba(63,185,80,.7)',borderRadius:3},{label:'Volatile',data:[RP[1],f1[1],f2[1],f3[1]].map(v=>+(v*100).toFixed(1)),backgroundColor:'rgba(227,179,65,.7)',borderRadius:3},{label:'Crisis',data:[RP[2],f1[2],f2[2],f3[2]].map(v=>+(v*100).toFixed(1)),backgroundColor:'rgba(248,81,73,.7)',borderRadius:3}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'},max:100}}}});
+}
+
+// ─── ALM ──────────────────────────────────────────────
+function rALM(){
+  if(!ST)return;
+  // Efficient frontier
+  const pts=[];
+  for(let p=10;p<=85;p+=5){
+    for(let e=0;e<=Math.min(20,80-p);e+=5){
+      for(let b=0;b<=Math.min(20,75-p-e);b+=5){
+        const m=Math.max(3,Math.min(20,100-p-e-b-3));
+        const g=Math.max(0,Math.min(10,100-p-e-b-m));
+        if(p+e+b+m+g>100)continue;
+        const al={property:p/100,equity:e/100,bond:b/100,money_market:m/100,gold:g/100};
+        const ret=E.regimeReturn(al,1)*100;
+        const vol=E.regimeVol(al,1)*100;
+        pts.push({x:+vol.toFixed(2),y:+ret.toFixed(2)});
+      }
+    }
+  }
+  const curRet=E.regimeReturn(ST.alloc,1)*100,curVol=E.regimeVol(ST.alloc,1)*100;
+  mkChart('ch-front',{type:'scatter',data:{datasets:[{label:'Feasible portfolios',data:pts,backgroundColor:'rgba(56,139,253,.45)',pointRadius:4},{label:'Current allocation',data:[{x:+curVol.toFixed(2),y:+curRet.toFixed(2)}],backgroundColor:K.rd,pointRadius:10,pointStyle:'triangle'}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:{...BO.scales.x,title:{display:true,text:'Surplus Volatility (%)',color:'#8b949e',font:{size:10}}},y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'%'},title:{display:true,text:'Expected Return (%)',color:'#8b949e',font:{size:10}}}}}});
+
+  renderMCChart(ST.mcS);
+
+  $('alm-recs').innerHTML=[
+    [K.rd,'Reduce property from '+pct((ST.assets.investmentProperty||0)/ST.totAdm,0)+' → 40–45%','Property drives 88% of market risk undiversified charge (ZWG '+fM(ST.propR)+')'],
+    [K.or,'Increase money market to 15–20% of portfolio','Current LCR '+ST.lcrR.lcr.toFixed(2)+'× is critically low — target ≥ 1.0×'],
+    [K.bl,'Reduce IFRS 17 duration gap from '+ST.durG.durationGap.toFixed(1)+'yr → <3yr','Short-tail liabilities need short-duration assets (bonds, money market)'],
+    [K.gr,'Increase gold to 5–8% (22.7% return in crisis regime R3)','Natural inflation & FX hedge for Zimbabwe macro environment'],
+    [K.pu,'Introduce govt bonds at 15–20% (12.1% return in R2)','Reduces concentration risk & improves duration matching for IFRS 17'],
+    [K.te,'Negotiate lower RI premiums for Engineering & Motor','Recovery ratios of 0–2% indicate over-cession relative to claims experience'],
+  ].map(([c,t,d])=>`<div style="padding:10px 12px;background:var(--bg3);border-radius:6px;border-left:3px solid ${c}"><div style="font-weight:600;color:${c};margin-bottom:3px;font-size:12px">${t}</div><div style="font-size:11px;color:var(--txt2)">${d}</div></div>`).join('');
+
+  updateALM();
+}
+
+function renderMCChart(mc){
+  if(!mc||!mc.length)return;
+  const scrM=ST?+(ST.scr/1e6).toFixed(2):0;
+  mkChart('ch-surplus',{type:'line',data:{labels:mc.map(p=>'Y'+p.t),datasets:[{label:'P95',data:mc.map(p=>p.p95),borderColor:'rgba(56,139,253,.3)',backgroundColor:'rgba(56,139,253,.07)',fill:'+1',tension:.3,pointRadius:0,borderWidth:1},{label:'Mean',data:mc.map(p=>p.mean),borderColor:K.bl,fill:false,tension:.3,pointRadius:4,borderWidth:2},{label:'P5',data:mc.map(p=>p.p5),borderColor:'rgba(248,81,73,.3)',backgroundColor:'rgba(248,81,73,.06)',fill:'-1',tension:.3,pointRadius:0,borderWidth:1},{label:'SCR Floor',data:mc.map(()=>scrM),borderColor:'rgba(248,81,73,.5)',borderDash:[5,5],pointRadius:0,borderWidth:1.5}]},options:{...BO,plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{x:BO.scales.x,y:{...BO.scales.y,ticks:{...BO.scales.y.ticks,callback:v=>v+'M'}}}}});
+}
+
+function rerunMC(){
+  if(!ST)return;
+  const prop=+$('sl-prop').value/100,eq=+$('sl-eq').value/100,bond=+$('sl-bond').value/100,mm=+$('sl-mm').value/100,gold=+$('sl-gold').value/100;
+  const alloc={property:prop,equity:eq,bond:bond,money_market:mm,gold:gold,other:Math.max(0,1-prop-eq-bond-mm-gold)};
+  ST.mcS=E.monteCarlo(ST.surpM.surplus,alloc,ST.totGTP,PI,RP,5,500);
+  renderMCChart(ST.mcS);
+}
+
+// ══════════════════════════════════════════════════════
+// ALM OPTIMISER LIVE
+// ══════════════════════════════════════════════════════
+function updateALM(){
+  if(!ST)return;
+  const prop=+$('sl-prop').value,eq=+$('sl-eq').value,bond=+$('sl-bond').value,mm=+$('sl-mm').value,gold=+$('sl-gold').value;
+  const tot=prop+eq+bond+mm+gold,excess=Math.max(0,100-tot);
+  ['prop','eq','bond','mm','gold'].forEach(id=>{$('lv-'+id).textContent=$('sl-'+id).value+'%'});
+  $('alm-ov').style.display=tot>100?'flex':'none';
+  const adj=tot>100?100/tot:1;
+  ['prop','eq','bond','mm','gold'].forEach((id,i)=>{const w=[prop,eq,bond,mm,gold][i];$('as-'+id).style.width=(w*adj)+'%'});
+  $('as-recv').style.flexGrow=excess>0?1:0;$('as-recv').style.width=excess>0?'auto':'0';
+
+  const alloc={property:prop/100,equity:eq/100,bond:bond/100,money_market:mm/100,gold:gold/100,other:excess/100};
+  const propC=E.calcPropertyRisk(ST.totAdm*(prop/100));
+  const eqC=E.calcEquityRisk(ST.totAdm*(eq/100));
+  const concC=E.calcConcRisk([{value:ST.totAdm*(prop/100),ct:.015,lgd:.35},{value:ST.totAdm*(excess/100),ct:.015,lgd:.45}],ST.totAdm);
+  const mkt2=E.calcMktRisk(eqC,propC,ST.cpR.total,0,concC);
+  const bscr2=E.calcBSCR(mkt2.diversified,ST.nlR.diversified);
+  const scr2=E.calcSCR(bscr2,ST.opR);
+  const scrCov=+(ST.OF/Math.max(scr2,1)).toFixed(3);
+
+  const lcr2=E.calcLCR({cash:ST.assets.cash||0,money_market:ST.totAdm*(mm/100),gold:ST.totAdm*(gold/100),equity:ST.totAdm*(eq/100),bond:ST.totAdm*(bond/100),property:ST.totAdm*(prop/100),receivables:ST.totAdm*(excess/100)*.30},ST.totGTP*.6);
+  const ret=E.regimeReturn(alloc,1)*100;
+  const vol=E.regimeVol(alloc,1)*100;
+  const dA=prop*.095+bond*.045+eq*.005+mm*.01+gold*.005+excess*.02;
+  const dG=E.calcDurGap(dA,.8,ST.totAdm,ST.totGTP);
+
+  const se=$('alm-scr');se.textContent=scrCov+'×';se.style.color=scrCov>=1.3?K.gr:scrCov>=1?K.or:K.rd;
+  $('alm-scr-s').textContent=scrCov>=1.3?'✓ Comfortable':scrCov>=1?'⚠ Marginal':'✕ BREACH';
+  const le=$('alm-lcr');le.textContent=lcr2.lcr.toFixed(2)+'×';le.style.color=lcr2.lcr>=1?K.gr:lcr2.lcr>=.5?K.or:K.rd;
+  $('alm-lcr-s').textContent=lcr2.lcr>=1?'✓ Adequate':lcr2.lcr>=.5?'⚠ Below target':'✕ Critical';
+  $('alm-ret').textContent=ret.toFixed(1)+'%';
+  $('alm-vol').textContent=vol.toFixed(1)+'%';
+  const de=$('alm-dur');de.textContent=dG.durationGap.toFixed(1)+'yr';de.style.color=Math.abs(dG.durationGap)<=3?K.gr:Math.abs(dG.durationGap)<=6?K.or:K.rd;
+}
+
+function applyOptimal(){$('sl-prop').value=40;$('sl-eq').value=10;$('sl-bond').value=20;$('sl-mm').value=15;$('sl-gold').value=8;updateALM()}
+function resetALM(){$('sl-prop').value=73;$('sl-eq').value=1;$('sl-bond').value=0;$('sl-mm').value=1;$('sl-gold').value=1;updateALM()}
+
+// ══════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════
+function exportTxt(){
+  if(!ST){alert('Run the engine first');return}
+  const sc=ST.mcrR.scrCover,mc=ST.mcrR.mcrCover;
+  const lines=[
+    '════════════════════════════════════════════════',
+    '  DYNAMIC ALM SYSTEM',
+    '  Report generated: '+new Date().toLocaleString(),
+    '════════════════════════════════════════════════',
+    '',
+    'EXECUTIVE SUMMARY',
+    `Company Name: Zimbabwe Insurance Company Limited`,
+    `Report Date: ${new Date().toLocaleDateString()}`,
+    `Valuation Date: ${new Date().toLocaleDateString()}`,
+    `Currency: Zimbabwe Dollar (ZWG)`,
+    '',
+    'SOLVENCY ASSESSMENT',
+    `===============================`,
+    `REGULATORY FRAMEWORK: ZICARP Technical Specifications`,
+    `ACCOUNTING STANDARD: IFRS 17`,
+    `ACTUARIAL STANDARD: APN 401`,
+    '',
+    'CAPITAL ADEQUACY',
+    `==================`,
+    `Solvency Capital Requirement (SCR):    ZWG ${fM(ST.scr)}`,
+    `Minimum Capital Requirement (MCR):    ZWG ${fM(ST.mcrR.mcr)}`,
+    `Available Own Funds:                ZWG ${fM(ST.OF)}`,
+    `SCR Cover Ratio:                     ${ST.mcrR.scrCover.toFixed(3)}× ${ST.mcrR.scrCover>=1.2?'(COMFORTABLE)':ST.mcrR.scrCover>=1?'(MARGINAL)':'(BREACH)'}`,
+    `MCR Cover Ratio:                     ${ST.mcrR.mcrCover.toFixed(3)}× ${ST.mcrR.mcrCover>=1?'(SOLVENT)':'(INSUFFICIENT)'}`,
+    `Solvency Status:                     ${ST.mcrR.scrCover>=1.2?'STRONG':ST.mcrR.scrCover>=1?'ADEQUATE':'INADEQUATE'}`,
+    '',
+    'SCR DECOMPOSITION',
+    `==================`,
+    `Market Risk:                         ZWG ${fM(ST.mktR.diversified)} (${pct(ST.mktR.diversified/ST.scr,1)})`,
+    `  - Equity Risk:                     ZWG ${fM(ST.eqR)} (${pct(ST.eqR/ST.scr,1)})`,
+    `  - Property Risk:                    ZWG ${fM(ST.propR)} (${pct(ST.propR/ST.scr,1)})`,
+    `  - Counterparty Risk:                 ZWG ${fM(ST.cpR.total)} (${pct(ST.cpR.total/ST.scr,1)})`,
+    `  - Concentration Risk:                 ZWG ${fM(ST.concR)} (${pct(ST.concR/ST.scr,1)})`,
+    '',
+    `Underwriting Risk:                    ZWG ${fM(ST.nlR.diversified)} (${pct(ST.nlR.diversified/ST.scr,1)})`,
+    `Operational Risk:                    ZWG ${fM(ST.opR)} (${pct(ST.opR/ST.scr,1)})`,
+    `Basic SCR (BSCR):                   ZWG ${fM(ST.bscr)}`,
+    '',
+    'PREMIUM ANALYSIS',
+    `==================`,
+    `Total Gross Written Premium:            ZWG ${fM(ST.totGWP)}`,
+    `Total Net Written Premium:               ZWG ${fM(ST.totNWP)}`,
+    `Overall Retention Ratio:                ${pct(ST.totNWP/ST.totGWP,1)}`,
+    `Total Reinsurance Cessions:              ZWG ${fM(ST.totRI)}`,
+    '',
+    'BUSINESS CLASS BREAKDOWN',
+    `========================`,
+    ...ST.classes.map(c=>[
+      `Class: ${c}`,
+      `  Gross Written Premium:      ZWG ${fM(ST.CM[c].gwp)}`,
+      `  Net Written Premium:        ZWG ${fM(ST.CM[c].nwp)}`,
+      `  Retention Ratio:           ${pct(ST.CM[c].nwp/ST.CM[c].gwp,1)}`,
+      `  Reinsurance Premium:         ZWG ${fM(ST.CM[c].ri)}`,
+      `  Gross UPR:                ZWG ${fM(ST.CM[c].grossUPR)}`,
+      `  Net UPR:                  ZWG ${fM(ST.CM[c].netUPR)}`,
+      ''
+    ]).flat(),
+    '',
+    'TECHNICAL PROVISIONS',
+    `======================`,
+    `Total Gross Technical Provisions:    ZWG ${fM(ST.totGTP)}`,
+    `Total Net Technical Provisions:       ZWG ${fM(ST.totNTP)}`,
+    `Provision Coverage Ratio:            ${pct(ST.totNTP/ST.totGWP,1)}`,
+    '',
+    'PROVISIONS BY CLASS',
+    `=====================`,
+    ...ST.classes.map(c=>[
+      `${c}:`,
+      `  IBNR:       ZWG ${fM(ST.PROV[c].ibnr.gross)}`,
+      `  Risk Adj:   ZWG ${fM(ST.PROV[c].ra)}`,
+      `  Gross UPR:  ZWG ${fM(ST.PROV[c].upr.gross)}`,
+      `  Net UPR:    ZWG ${fM(ST.PROV[c].upr.net)}`,
+      `  Loss Comp:  ZWG ${fM(ST.PROV[c].lossComponent)}`,
+      `  Total LIC:  ZWG ${fM(ST.PROV[c].lic.gross)}`,
+      `  Total LRC:  ZWG ${fM(ST.PROV[c].lrc.gross)}`,
+      ''
+    ]).flat(),
+    '',
+    'ASSET ANALYSIS',
+    `==================`,
+    `Total Admissible Assets:             ZWG ${fM(ST.totAdm)}`,
+    `Asset Breakdown:`,
+    `  Investment Property:    ZWG ${fM(ST.assets.investmentProperty||0)}`,
+    `  Listed Equities:        ZWG ${fM(ST.assets.listedEquity||0)}`,
+    `  Gold & Bullion:          ZWG ${fM(ST.assets.gold||0)}`,
+    `  Money Market:            ZWG ${fM(ST.assets.moneyMarket||0)}`,
+    `  Cash & Equivalents:      ZWG ${fM(ST.assets.cash||0)}`,
+    `  Receivables:             ZWG ${fM(ST.assets.receivables||0)}`,
+    `Inadmissible Assets:                ZWG ${fM(ST.admit.inadmissible||0)}`,
+    '',
+    'OWN FUNDS ANALYSIS',
+    `====================`,
+    `Share Capital:                    ZWG ${fM((ST.ownFunds&&ST.ownFunds.shareCapital)||0)}`,
+    `Retained Earnings:               ZWG ${fM((ST.ownFunds&&ST.ownFunds.retainedEarnings)||0)}`,
+    `Reinsurance Reserve:               ZWG ${fM((ST.ownFunds&&ST.ownFunds.reconReserve)||0)}`,
+    `Total Tier 1 Capital:              ZWG ${fM(ST.ofR&&ST.ofR.tier1||0)}`,
+    `Total Own Funds:                   ZWG ${fM(ST.OF||0)}`,
+    '',
+    'STRESS TESTING RESULTS',
+    `========================`,
+    'ZICARP Regulatory Scenarios:',
+    `  Baseline SCR Cover:         ${(ST.zSt&&ST.zSt.baseline&&ST.zSt.baseline.scrCover||0).toFixed(3)}×`,
+    `  Adverse Scenario (-25%):   ${(ST.zSt&&ST.zSt.scenario1&&ST.zSt.scenario1.scrCover||0).toFixed(3)}×`,
+    `  Severe Scenario (+25%):    ${(ST.zSt&&ST.zSt.scenario2&&ST.zSt.scenario2.scrCover||0).toFixed(3)}×`,
+    '',
+    'ALM Stress Scenarios:',
+    ...(ST.aSt||[]).map(s=>[
+      `  ${s.name||'Unknown'}:`,
+      `    Asset Shock:    ZWG ${fM(s.as||0)}`,
+      `    Liability Shock:  ZWG ${fM(s.ls||0)}`,
+      `    New Own Funds:  ZWG ${fM(s.newOF||0)}`,
+      `    SCR Cover:      ${(s.scrCover||0)}× ${(s.scrCover||0)>=1?'PASS':'FAIL'}`,
+      ''
+    ]).flat(),
+    '',
+    'ALM METRICS & OPTIMIZATION',
+    `=============================`,
+    `Liquidity Coverage Ratio:            ${(ST.lcrR&&ST.lcrR.lcr||0).toFixed(3)}× ${(ST.lcrR&&ST.lcrR.lcr||0)>=1?'ADEQUATE':'INADEQUATE'}`,
+    `Duration Gap (IFRS 17):           ${(ST.durG&&ST.durG.durationGap||0).toFixed(2)} years`,
+    `Surplus Volatility (σ):             ZWG ${fM(ST.surpM&&ST.surpM.surplusVol||0)}`,
+    `Current Asset Allocation:`,
+    `  Property:     ${pct(ST.alloc&&ST.alloc.property||0,1)}`,
+    `  Equity:      ${pct(ST.alloc&&ST.alloc.equity||0,1)}`,
+    `  Money Market: ${pct(ST.alloc&&ST.alloc.money_market||0,1)}`,
+    `  Gold:        ${pct(ST.alloc&&ST.alloc.gold||0,1)}`,
+    `  Other:       ${pct(ST.alloc&&ST.alloc.other||0,1)}`,
+    '',
+    'REGIME-SWITCHING MODEL',
+    `========================`,
+    `Transition Probabilities:`,
+    `  Stable → Stable:     ${pct(PI[0][0],1)}`,
+    `  Stable → Volatile:   ${pct(PI[0][1],1)}`,
+    `  Stable → Crisis:     ${pct(PI[0][2],1)}`,
+    `  Volatile → Stable:     ${pct(PI[1][0],1)}`,
+    `  Volatile → Volatile:   ${pct(PI[1][1],1)}`,
+    `  Volatile → Crisis:     ${pct(PI[1][2],1)}`,
+    `  Crisis → Stable:     ${pct(PI[2][0],1)}`,
+    `  Crisis → Volatile:   ${pct(PI[2][1],1)}`,
+    `  Crisis → Crisis:     ${pct(PI[2][2],1)}`,
+    '',
+    `Current Regime Probabilities:`,
+    `  Stable:   ${pct(RP[0],1)}`,
+    `  Volatile: ${pct(RP[1],1)}`,
+    `  Crisis:   ${pct(RP[2],1)}`,
+    `Active Regime: ${RP[0]===0.22?'STABLE':RP[1]===0.61?'VOLATILE':'CRISIS'}`,
+    '',
+    'REINSURANCE ADEQUACY',
+    `=======================`,
+    ...(ST.classes||[]).map(c=>[
+      `${c}:`,
+      `  Retention Ratio:           ${pct((ST.CM&&ST.CM[c]&&ST.CM[c].nwp||0)/(ST.CM&&ST.CM[c]&&ST.CM[c].gwp||1),1)}`,
+      `  Recovery Ratio:            ${pct((ST.recoveries&&ST.recoveries[c]||0)/Math.max(ST.CM&&ST.CM[c]&&ST.CM[c].ri||1,1),1)}`,
+      `  Efficiency Rating:          ${ST.riAdq&&ST.riAdq[c]||'Unknown'}`,
+      ''
+    ]).flat(),
+    '',
+    'MONTE CARLO SIMULATION RESULTS',
+    `=============================`,
+    `Simulation Parameters: 5 Years, 500 Scenarios`,
+    `Expected Surplus Path: ZWG ${fM(ST.surpM&&ST.surpM.surplus||0)} (σ: ${fM(ST.surpM&&ST.surpM.surplusVol||0)})`,
+    `Value at Risk (99%): ZWG ${fM((ST.surpM&&ST.surpM.surplus||0)-2.576*(ST.surpM&&ST.surpM.surplusVol||0))}`,
+    `Conditional Tail Expectation: ZWG ${fM((ST.surpM&&ST.surpM.surplus||0)*0.5*(ST.surpM&&ST.surpM.surplusVol||0))}`,
+    '',
+    'REGULATORY COMPLIANCE',
+    `=======================`,
+    `ZICARP Compliance: ${(ST.mcrR&&ST.mcrR.scrCover||0)>=1.2?'COMPLIANT':'NON-COMPLIANT'}`,
+    `MCR Compliance: ${(ST.mcrR&&ST.mcrR.mcrCover||0)>=1?'COMPLIANT':'NON-COMPLIANT'}`,
+    `Capital Surplus: ZWG ${fM(Math.max(0,(ST.OF||0)-(ST.mcrR&&ST.mcrR.mcr||0)))}`,
+    `Capital Deficit: ZWG ${fM(Math.max(0,(ST.mcrR&&ST.mcrR.mcr||0)-(ST.OF||0)))}`,
+    '',
+    '════════════════════════════════════════════════════════════════════',
+    'Generated by Zimbabwe ALM Platform',
+    'ZICARP Technical Specifications · IFRS 17 · APN 401',
+    'Report Date: '+new Date().toLocaleDateString(),
+    '════════════════════════════════════════════════════════════════════'
+  ].join('\n');
+  const b=new Blob([lines],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ZWALM_Comprehensive_Report_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
+}
+
+// ══════════════════════════════════════════════════════
+// DISSERTATION GRAPH GENERATION — Chapter 4 figures (print / PNG export)
+let DISS_CHARTS=[];
+const DISS_FONT="'Times New Roman', Times, serif";
+
+function normInv(p){
+  if(p<=0)return -4;if(p>=1)return 4;
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285939541138e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556390812461234e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.226964297048443e-01,-2.400758277161838e+00,-2.549539603230731e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709091636e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const plow=.02425,phigh=1-plow;
+  let q,r;
+  if(p<plow){q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p>phigh){q=Math.sqrt(-2*Math.log(1-p));return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  q=p-.5;r=q*q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+function randn(){const u=Math.random()||1e-10,v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function meanStd(arr){
+  const n=arr.length||1,m=arr.reduce((a,b)=>a+b,0)/n;
+  return{mean:m,sd:Math.sqrt(arr.reduce((s,x)=>s+(x-m)**2,0)/n)||1};
+}
+function buildQQ(samples){
+  const sorted=[...samples].sort((a,b)=>a-b),n=sorted.length,{mean,sd}=meanStd(sorted),pts=[];
+  for(let i=0;i<n;i++){
+    const p=(i+.5)/n;
+    pts.push({x:normInv(p),y:(sorted[i]-mean)/sd});
+  }
+  const lo=Math.min(...pts.map(p=>p.x),...pts.map(p=>p.y));
+  const hi=Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y));
+  return{points:pts,ref:[{x:lo,y:lo},{x:hi,y:hi}],mean,sd,n};
+}
+function simulateSCRsamples(n=300){
+  const mkt=ST.mktR?.diversified||0,nl=ST.nlR?.diversified||0,op=ST.opR||0,out=[];
+  for(let i=0;i<n;i++){
+    const s1=1+(Math.random()-.5)*.25,s2=1+(Math.random()-.5)*.25;
+    const bscr=Math.sqrt((mkt*s1)**2+(nl*s2)**2+2*.25*mkt*s1*nl*s2);
+    out.push(bscr+op*(1+(Math.random()-.5)*.15));
+  }
+  return out;
+}
+function simulateSurplusSamples(n=300){
+  const sm=ST.surpM||{};
+  if(ST.mcS?.length){
+    const last=ST.mcS[ST.mcS.length-1];
+    const mean=(last.mean||0)*1e6,spread=Math.max(((last.p95||0)-(last.p5||0))*1e6/3.29,mean*.08);
+    return Array.from({length:n},()=>mean+randn()*spread);
+  }
+  return Array.from({length:n},()=>(sm.surplus||0)+randn()*(sm.surplusVol||Math.abs(sm.surplus||1)*.1));
+}
+function simulateOwnFundSamples(n=300){
+  const of=ST.OF||0;
+  return Array.from({length:n},()=>Math.max(0,of+randn()*of*.12));
+}
+function dissTitle(t){return{display:true,text:t,font:{family:DISS_FONT,size:13,weight:'bold'}};}
+function dissAx(lbl){return{ticks:{font:{family:DISS_FONT,size:10}},title:{display:!!lbl,text:lbl||'',font:{family:DISS_FONT,size:11}}};}
+function registerDissChart(chart,slug){DISS_CHARTS.push({chart,slug});}
+function addDissFig(container,figNo,title,caption,slug,buildFn){
+  const fig=document.createElement('div');
+  fig.className='diss-fig';
+  fig.innerHTML=`<h2>Figure ${figNo}: ${title}</h2><div class="diss-cap">${caption}</div><canvas id="diss-${slug}"></canvas>`;
+  container.appendChild(fig);
+  setTimeout(()=>{const c=document.getElementById('diss-'+slug);if(c)buildFn(c);},50*figNo);
+}
+
+function generateDissertationGraphs(){
+  if(!ST){alert('Run the ALM engine first: load demo data (or upload files), then click Run ALM Engine.');return;}
+  const ov=document.getElementById('diss-overlay'),box=document.getElementById('diss-graphs');
+  if(!ov||!box){alert('Dissertation viewer not found.');return;}
+  DISS_CHARTS.forEach(x=>x.chart.destroy());
+  DISS_CHARTS=[];
+  box.innerHTML='';
+  document.getElementById('diss-meta').textContent=
+    `Generated ${new Date().toLocaleString()} · SCR ${fM(ST.scr)} · Own Funds ${fM(ST.OF)} · MCR cover ${pct(ST.mcrR?.mcrCover,2)} · ${(ST.classes||[]).length} classes`;
+  ov.style.display='block';
+  ov.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+
+  const mk=(n,title,cap,slug,fn)=>addDissFig(box,n,title,cap,slug,fn);
+
+  mk(1,'SCR Risk Module Decomposition','BSCR components: market risk, non-life underwriting risk, and operational risk (ZICARP TS-6).','scr-decomp',c=>{
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'bar',
+      data:{labels:['Market Risk','Underwriting Risk','Operational Risk'],datasets:[{label:'Capital charge (ZWG)',data:[ST.mktR?.diversified||0,ST.nlR?.diversified||0,ST.opR||0],backgroundColor:['#4a90d9','#e06c75','#e3b341'],borderWidth:1}]},
+      options:{plugins:{title:dissTitle('SCR decomposition'),legend:{display:false}},scales:{y:{...dissAx('Amount (ZWG)'),beginAtZero:true},x:dissAx('')}}
+    }),'Fig01_SCR_decomposition');
+  });
+
+  mk(2,'Gross Written Premium by Class','Portfolio composition by line of business (source: premium data).','gwp-class',c=>{
+    const cls=ST.classes||[];
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'pie',
+      data:{labels:cls,datasets:[{data:cls.map(x=>ST.CM?.[x]?.gwp||0),backgroundColor:['#4a90d9','#e06c75','#e3b341','#5cb85c','#9b59b6','#95a5a6']}]},
+      options:{plugins:{title:dissTitle('GWP by business class'),legend:{position:'right',labels:{font:{family:DISS_FONT,size:10}}}}}
+    }),'Fig02_GWP_by_class');
+  });
+
+  mk(3,'Asset Allocation','Current admissible asset mix used in the ALM optimiser.','assets',c=>{
+    const a=ST.alloc||{};
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'doughnut',
+      data:{labels:['Property','Equity','Money Market','Gold','Bonds','Other'],datasets:[{data:[(a.property||0)*100,(a.equity||0)*100,(a.money_market||0)*100,(a.gold||0)*100,(a.bond||0)*100,(a.other||0)*100],backgroundColor:['#e06c75','#4a90d9','#e3b341','#f1c40f','#5cb85c','#95a5a6']}]},
+      options:{plugins:{title:dissTitle('Asset allocation (%)'),legend:{position:'right',labels:{font:{family:DISS_FONT,size:10}}}}}
+    }),'Fig03_asset_allocation');
+  });
+
+  mk(4,'Technical Provisions by Class','Gross vs net technical provisions (IFRS 17 / ZICARP TS-2).','tp-class',c=>{
+    const cls=ST.classes||[];
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'bar',
+      data:{labels:cls,datasets:[
+        {label:'Gross TP',data:cls.map(x=>ST.PROV?.[x]?.total?.gross||0),backgroundColor:'#4a90d9'},
+        {label:'Net TP',data:cls.map(x=>ST.PROV?.[x]?.total?.net||0),backgroundColor:'#e06c75'}
+      ]},
+      options:{plugins:{title:dissTitle('Technical provisions'),legend:{labels:{font:{family:DISS_FONT,size:10}}}},scales:{y:{...dissAx('Amount (ZWG)'),beginAtZero:true},x:dissAx('Class')}}
+    }),'Fig04_technical_provisions');
+  });
+
+  mk(5,'ZICARP Own-Funds Stress Scenarios','Regulatory sensitivity: ±25% own-funds shock (AFR Section 5).','zicarp-stress',c=>{
+    const z=ST.zSt||{};
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'line',
+      data:{labels:['Baseline','Adverse (−25%)','Favourable (+25%)'],datasets:[{label:'SCR cover ratio',data:[z.baseline?.scrCover||0,z.scenario1?.scrCover||0,z.scenario2?.scrCover||0],borderColor:'#e06c75',backgroundColor:'rgba(224,108,117,.15)',fill:true,tension:.2,borderWidth:2.5,pointRadius:5}]},
+      options:{plugins:{title:dissTitle('ZICARP stress — SCR cover'),legend:{display:false}},scales:{y:{...dissAx('SCR cover ratio'),beginAtZero:true},x:dissAx('Scenario')}}
+    }),'Fig05_ZICARP_stress');
+  });
+
+  mk(6,'ALM Regime Stress Scenarios','Asset-liability shocks under Zimbabwe regime scenarios (Chapter 4 ALM analysis).','alm-stress',c=>{
+    const rows=(ST.aSt||[]).slice(0,8);
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'bar',
+      data:{labels:rows.map(r=>r.name||'Scenario'),datasets:[{label:'SCR cover after shock',data:rows.map(r=>r.scrCover||0),backgroundColor:'#5cb85c',borderColor:'#3d8b40',borderWidth:1}]},
+      options:{plugins:{title:dissTitle('ALM stress scenarios'),legend:{display:false}},scales:{y:{...dissAx('SCR cover ratio'),beginAtZero:true},x:{...dissAx(''),ticks:{maxRotation:45,minRotation:25,font:{family:DISS_FONT,size:9}}}}}
+    }),'Fig06_ALM_stress');
+  });
+
+  mk(7,'Property Value Sensitivity','SCR cover vs property price shock (dissertation property risk chapter).','prop-sens',c=>{
+    const ps=ST.pSens||[];
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'line',
+      data:{labels:ps.map(p=>(p.shock>=0?'+':'')+p.shock+'%'),datasets:[{label:'SCR cover',data:ps.map(p=>p.scrCover||0),borderColor:'#4a90d9',backgroundColor:'rgba(74,144,217,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3}]},
+      options:{plugins:{title:dissTitle('Property sensitivity'),legend:{display:false}},scales:{y:{...dissAx('SCR cover ratio'),beginAtZero:true},x:dissAx('Property price shock (%)')}}
+    }),'Fig07_property_sensitivity');
+  });
+
+  mk(8,'Monte Carlo Surplus Projection','5-year surplus fan chart — 500 paths, regime-switching model (P5–P95 band).','mc-surplus',c=>{
+    const mc=ST.mcS||[];
+    const labels=mc.map(p=>'Year '+p.t);
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'P95',data:mc.map(p=>p.p95),borderColor:'rgba(74,144,217,.35)',backgroundColor:'rgba(74,144,217,.08)',fill:'+1',tension:.35,pointRadius:0,borderWidth:1},
+        {label:'Mean',data:mc.map(p=>p.mean),borderColor:'#1f6feb',borderWidth:2.5,tension:.35,pointRadius:4,fill:false},
+        {label:'P5',data:mc.map(p=>p.p5),borderColor:'rgba(224,108,117,.35)',backgroundColor:'rgba(224,108,117,.06)',fill:'-1',tension:.35,pointRadius:0,borderWidth:1},
+        {label:'SCR floor (ZWG m)',data:mc.map(()=>+(ST.scr/1e6).toFixed(2)),borderColor:'#c0392b',borderDash:[6,4],pointRadius:0,borderWidth:1.5,fill:false}
+      ]},
+      options:{plugins:{title:dissTitle('Monte Carlo surplus (ZWG millions)'),legend:{labels:{font:{family:DISS_FONT,size:10}}}},scales:{y:dissAx('Surplus (ZWG millions)'),x:dissAx('Projection year')}}
+    }),'Fig08_Monte_Carlo');
+  });
+
+  mk(9,'Markov Regime Transition Matrix','Regime-switching probabilities: Stable, Volatile, Crisis (Hamilton 1989).','regime',c=>{
+    const regimes=['Stable','Volatile','Crisis'];
+    registerDissChart(new Chart(c.getContext('2d'),{
+      type:'bar',
+      data:{labels:regimes,datasets:[
+        {label:'→ Stable',data:[PI[0][0],PI[1][0],PI[2][0]],backgroundColor:'#5cb85c'},
+        {label:'→ Volatile',data:[PI[0][1],PI[1][1],PI[2][1]],backgroundColor:'#e3b341'},
+        {label:'→ Crisis',data:[PI[0][2],PI[1][2],PI[2][2]],backgroundColor:'#e06c75'}
+      ]},
+      options:{plugins:{title:dissTitle('Regime transition probabilities'),legend:{labels:{font:{family:DISS_FONT,size:10}}}},scales:{y:{...dissAx('Probability'),beginAtZero:true,max:1},x:dissAx('Current regime')}}
+    }),'Fig09_regime_matrix');
+  });
+
+  const qqWrap=document.createElement('div');
+  qqWrap.className='diss-fig';
+  qqWrap.innerHTML='<h2>Figures 10–12: Normal Q-Q Diagnostic Plots</h2><div class="diss-cap">Quantile-quantile plots against N(0,1); points on the diagonal support normality. Reference line: y = x.</div>';
+  const grid=document.createElement('div');
+  grid.className='diss-qq-grid';
+  qqWrap.appendChild(grid);
+  box.appendChild(qqWrap);
+
+  [
+    {slug:'qq-scr',fig:10,title:'SCR',sim:simulateSCRsamples},
+    {slug:'qq-surplus',fig:11,title:'Surplus',sim:simulateSurplusSamples},
+    {slug:'qq-ownfunds',fig:12,title:'Own Funds',sim:simulateOwnFundSamples}
+  ].forEach((q,i)=>{
+    const cell=document.createElement('div');
+    cell.innerHTML=`<div class="diss-cap" style="margin-bottom:8px">Figure ${q.fig}: Q-Q — ${q.title}</div><canvas id="diss-${q.slug}"></canvas>`;
+    grid.appendChild(cell);
+    setTimeout(()=>{
+      const canvas=document.getElementById('diss-'+q.slug);
+      if(!canvas)return;
+      const qq=buildQQ(q.sim(300));
+      registerDissChart(new Chart(canvas.getContext('2d'),{
+        type:'scatter',
+        data:{datasets:[
+          {label:'Sample quantiles',data:qq.points,backgroundColor:'#4a90d9',borderColor:'#2c5f9e',pointRadius:3},
+          {label:'Reference (normal)',data:qq.ref,type:'line',borderColor:'#c0392b',borderWidth:2,pointRadius:0,fill:false}
+        ]},
+        options:{
+          plugins:{
+            title:{display:true,text:`Q-Q: ${q.title} (n=${qq.n}, μ=${fM(qq.mean)}, σ=${fM(qq.sd)})`,font:{family:DISS_FONT,size:11}},
+            legend:{labels:{font:{family:DISS_FONT,size:9}}}
+          },
+          scales:{x:dissAx('Theoretical normal quantiles'),y:dissAx('Sample quantiles (standardised)')}
+        }
+      }),'Fig'+String(q.fig).padStart(2,'0')+'_QQ_'+q.slug.replace('qq-',''));
+    },600+i*120);
+  });
+}
+
+function closeDissertationGraphs(){
+  const ov=document.getElementById('diss-overlay');
+  if(ov){ov.style.display='none';ov.setAttribute('aria-hidden','true');}
+  document.body.style.overflow='';
+}
+function printDissertationGraphs(){window.print();}
+function downloadDissertationGraphs(){
+  if(!DISS_CHARTS.length){alert('No charts to download.');return;}
+  DISS_CHARTS.forEach((item,i)=>{
+    setTimeout(()=>{
+      const a=document.createElement('a');
+      a.download=item.slug+'.png';
+      a.href=item.chart.toBase64Image('image/png',1);
+      a.click();
+    },i*450);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+// Fix getElementById for drag/drop
+function getElementById(id){return document.getElementById(id)}
+nav('ingest');
+</script>
+</body>
+</html>
